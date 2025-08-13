@@ -1,5 +1,5 @@
-import { find } from '$lib/models/account.js';
-import { forAccount } from '$lib/models/transaction.js';
+import { find } from '$lib/models/account.svelte';
+import { forAccount } from '$lib/models/transaction.svelte';
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ url }) => {

@@ -10,12 +10,12 @@
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
 	const id = $props.id();
 	let name = $state('');
-	let open = $state(false);
+	let showAddAccountDrawer = $state(false);
 
 	async function addAccount(event: Event) {
 		event.preventDefault();
 		await createAccount(name);
-		open = false;
+		showAddAccountDrawer = false;
 		name = '';
 	}
 </script>
@@ -25,7 +25,8 @@
 		{#each accounts as account (account.id)}
 			<Table.Row>
 				<Table.Cell class="font-medium"
-					><a href={`/account?id=${account.id}`}>{account.name}</a></Table.Cell
+					><a class="inline-block w-full" href={`/account?id=${account.id}`}>{account.name}</a
+					></Table.Cell
 				>
 				<Table.Cell class="text-right">{account.balance}</Table.Cell>
 			</Table.Row>
@@ -42,7 +43,7 @@
 </Table.Root>
 
 <div class="m-auto w-full p-4">
-	<Drawer.Root bind:open>
+	<Drawer.Root bind:open={showAddAccountDrawer}>
 		<Drawer.Trigger class={buttonVariants({ variant: 'outline' })}>Add Account</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Header>

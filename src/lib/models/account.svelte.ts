@@ -29,7 +29,7 @@ accountDb
 		include_docs: true
 	})
 	.on('change', (change) => {
-		if (change.doc) {
+		if (change.doc?.type === 'Account') {
 			allAccounts.push({
 				id: change.doc._id,
 				name: change.doc.name

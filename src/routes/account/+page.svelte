@@ -1,21 +1,48 @@
 <script lang="ts">
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Drawer from '$lib/components/ui/drawer/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import type { Transaction } from '$lib/models/transaction';
+	import type { Transaction } from '$lib/models/transaction.svelte.js';
+	import { create as createTransaction } from '$lib/models/transaction.svelte.js';
 
 	const { data } = $props();
 	const account = data.account;
 	const transactions = data.transactions;
-	const months = transactions.reduce((acc, t) => {
-		const month = t.date.slice(0, 7);
-		const transactions = acc.get(month) || [];
-		transactions.push(t);
-		acc.set(month, transactions);
-		return acc;
-	}, new Map<string, Transaction[]>());
-	const monthsArray = Object.keys(months);
+	const months = $derived(
+		transactions.reduce((acc, t) => {
+			const month = t.date.slice(0, 7);
+			const transactions = acc.get(month) || [];
+			transactions.push(t);
+			acc.set(month, transactions);
+			return acc;
+		}, new Map<string, Transaction[]>())
+	);
+
+	const id = $props.id();
+	let showAddTransactionDrawer = $state(false);
+	let description = $state('');
+	let amount = $state(0);
+	let date = $state(new Date().toISOString().slice(0, 10));
+
+	async function recordTransaction(event: Event) {
+		event.preventDefault();
+		await createTransaction(description, amount, date, account.id);
+		showAddTransactionDrawer = false;
+		description = '';
+		amount = 0;
+		date = new Date().toISOString().slice(0, 10);
+	}
 </script>
 
-<h1 class="text-2xl font-bold">{account.name}</h1>
+<div class="flex p-1">
+	<div class="text-xl">{account.name}</div>
+	<button
+		class="ml-auto bg-violet-500 px-2 text-white"
+		onclick={() => (showAddTransactionDrawer = true)}>+</button
+	>
+</div>
 
 <Table.Root>
 	<Table.Body>
@@ -45,3 +72,46 @@
 		</Table.Row>
 	</Table.Footer>
 </Table.Root>
+
+<Drawer.Root bind:open={showAddTransactionDrawer}>
+	<Drawer.Content>
+		<Drawer.Header>
+			<Drawer.Title>Record Transaction</Drawer.Title>
+		</Drawer.Header>
+
+		<form class="grid items-start gap-4 px-4" onsubmit={recordTransaction}>
+			<div class="grid gap-2">
+				<Label for="description-{id}">Description</Label>
+				<Input
+					id="description-{id}"
+					type="text"
+					placeholder="Description"
+					required={true}
+					bind:value={description}
+				/>
+			</div>
+
+			<div class="grid gap-2">
+				<Label for="amount-{id}">Amount</Label>
+				<Input
+					id="amount-{id}"
+					type="number"
+					placeholder="Amount"
+					required={true}
+					bind:value={amount}
+				/>
+			</div>
+
+			<div class="grid gap-2">
+				<Label for="date-{id}">Date</Label>
+				<Input id="date-{id}" type="date" placeholder="Date" required={true} bind:value={date} />
+			</div>
+
+			<Button type="submit">Save</Button>
+		</form>
+
+		<Drawer.Footer>
+			<Drawer.Close>Cancel</Drawer.Close>
+		</Drawer.Footer>
+	</Drawer.Content>
+</Drawer.Root>
