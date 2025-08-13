@@ -29,7 +29,14 @@ export const create = async (
 	});
 };
 
-const transactionsByAccount = $state<Map<string, Transaction[]>>(new Map());
+export const remove = async (id: string): Promise<void> => {
+	const transactionDoc = await transactionDb.get(id);
+	if (transactionDoc) {
+		await transactionDb.remove(transactionDoc);
+	}
+};
+
+const transactionsByAccount = $state<Record<string, Transaction[]>>({});
 
 transactionDb
 	.changes({
@@ -38,25 +45,35 @@ transactionDb
 		include_docs: true
 	})
 	.on('change', (change) => {
-		if (change.doc?.type === 'Transaction') {
-			if (!transactionsByAccount.has(change.doc.accountId)) {
-				transactionsByAccount.set(change.doc.accountId, []);
+		const doc = change.doc;
+		if (!doc) return;
+
+		if (change.deleted) {
+			Object.values(transactionsByAccount).forEach((transactions) => {
+				const index = transactions.findIndex((t) => t.id === doc._id);
+				if (index !== -1) {
+					transactions.splice(index, 1);
+				}
+			});
+		} else if (doc.type === 'Transaction') {
+			if (!transactionsByAccount[doc.accountId]) {
+				transactionsByAccount[doc.accountId] = [];
 			}
-			const transactions = transactionsByAccount.get(change.doc.accountId)!;
+			const transactions = transactionsByAccount[doc.accountId]!;
 			transactions.push({
-				id: change.doc._id,
-				description: change.doc.description,
-				amount: change.doc.amount,
-				date: change.doc.date,
-				accountId: change.doc.accountId
+				id: doc._id,
+				description: doc.description,
+				amount: doc.amount,
+				date: doc.date,
+				accountId: doc.accountId
 			});
 		}
 	});
 
 export const forAccount = async (account: Account): Promise<Transaction[]> => {
-	if (!transactionsByAccount.has(account.id)) {
+	if (!transactionsByAccount[account.id]) {
 		const transactions: Transaction[] = [];
-		transactionsByAccount.set(account.id, transactions);
+		transactionsByAccount[account.id] = transactions;
 		await transactionDb.createIndex({
 			index: {
 				fields: ['type', 'accountId']
@@ -66,7 +83,6 @@ export const forAccount = async (account: Account): Promise<Transaction[]> => {
 			selector: { type: 'Transaction', accountId: account.id }
 			// sort: ['date']
 		});
-		console.log('result', result);
 		result.docs.forEach((doc) => {
 			transactions.push({
 				id: doc._id,
@@ -77,5 +93,5 @@ export const forAccount = async (account: Account): Promise<Transaction[]> => {
 			});
 		});
 	}
-	return transactionsByAccount.get(account.id)!;
+	return transactionsByAccount[account.id]!;
 };
