@@ -1,11 +1,16 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Drawer from '$lib/components/ui/drawer/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import type { Transaction } from '$lib/models/transaction.svelte.js';
-	import { create as createTransaction } from '$lib/models/transaction.svelte.js';
+	import {
+		create as createTransaction,
+		remove as removeTransaction
+	} from '$lib/models/transaction.svelte.js';
 
 	const { data } = $props();
 	const account = data.account;
@@ -52,12 +57,32 @@
 				<Table.Cell class="text-right">
 					{transactions.reduce((acc, t) => acc + t.amount, 0)}
 				</Table.Cell>
+				<Table.Cell></Table.Cell>
 			</Table.Row>
 			{#each transactions as transaction (transaction.id)}
 				<Table.Row>
 					<Table.Cell class="font-medium">{transaction.date}</Table.Cell>
 					<Table.Cell class="font-medium">{transaction.description}</Table.Cell>
 					<Table.Cell class="text-right">{transaction.amount}</Table.Cell>
+					<Table.Cell>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								<Button variant="ghost" size="icon">
+									<EllipsisIcon />
+								</Button>
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content>
+								<DropdownMenu.Group>
+									<DropdownMenu.Item>Edit</DropdownMenu.Item>
+									<DropdownMenu.Item
+										onclick={() => {
+											removeTransaction(transaction.id);
+										}}>Delete</DropdownMenu.Item
+									>
+								</DropdownMenu.Group>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</Table.Cell>
 				</Table.Row>
 			{/each}
 		{/each}
