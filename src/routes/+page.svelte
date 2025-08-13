@@ -25,7 +25,7 @@
 		{#each accounts as account (account.id)}
 			<Table.Row>
 				<Table.Cell class="font-medium"
-					><a class="inline-block w-full" href={`/account?id=${account.id}`}>{account.name}</a
+					><a class="inline-block w-full" href={`/transactions?id=${account.id}`}>{account.name}</a
 					></Table.Cell
 				>
 				<Table.Cell class="text-right">{account.balance}</Table.Cell>
