@@ -1,7 +1,7 @@
-import { Account } from '$lib/models/account';
+import { all } from '$lib/models/account.svelte';
 
 export const load = async () => {
 	return {
-		accounts: Account.all()
+		accounts: await all()
 	};
 };

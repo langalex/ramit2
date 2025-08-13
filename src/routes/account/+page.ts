@@ -1,4 +1,5 @@
-import { find } from '$lib/models/account';
+import { find } from '$lib/models/account.js';
+import { forAccount } from '$lib/models/transaction.js';
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ url }) => {
@@ -6,12 +7,12 @@ export const load = async ({ url }) => {
 	if (!id) {
 		redirect(302, '/');
 	}
-	const account = find(id);
+	const account = await find(id);
 	if (!account) {
 		redirect(302, '/');
 	}
 
-	const transactions = account.transactions();
+	const transactions = await forAccount(account);
 	return {
 		account,
 		transactions
