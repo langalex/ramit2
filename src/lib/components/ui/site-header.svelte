@@ -1,13 +1,14 @@
 <script>
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 </script>
 
 <header class="sticky top-0 z-50 w-full bg-violet-500 px-2 py-1 text-white">
 	<div class="container-wrapper">
 		<div class="flex items-center">
 			<div>
-				{#if page.url.pathname !== '/'}
-					<a href="/">back</a>
+				{#if resolve(page.url.pathname) !== '/'}
+					<a href={resolve('/')}>back</a>
 				{/if}
 			</div>
 			<div class="grow text-center">Ramit 2</div>

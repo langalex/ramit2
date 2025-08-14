@@ -5,6 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { create as createAccount } from '$lib/models/account.svelte';
+	import { resolve } from '$app/paths';
 
 	const { data } = $props();
 	const { balancesByAccount } = data;
@@ -27,7 +28,8 @@
 		{#each accounts as account (account.id)}
 			<Table.Row>
 				<Table.Cell class="font-medium"
-					><a class="inline-block w-full" href={`/transactions?id=${account.id}`}>{account.name}</a
+					><a class="inline-block w-full" href={resolve('/transactions') + `?id=${account.id}`}
+						>{account.name}</a
 					></Table.Cell
 				>
 				<Table.Cell class="text-right">{balancesByAccount[account.id] ?? 0}</Table.Cell>
