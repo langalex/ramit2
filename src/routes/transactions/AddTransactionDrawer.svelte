@@ -9,17 +9,24 @@
 	const id = $props.id();
 	let { account, open = $bindable() }: { account: Account; open: boolean } = $props();
 	let description = $state('');
-	let amount = $state(0);
+	let amount = $state('');
 	let date = $state(new Date().toISOString().slice(0, 10));
+	let descriptionInput: HTMLInputElement | null = $state(null);
 
 	async function recordTransaction(event: Event) {
 		event.preventDefault();
-		await createTransaction(description, amount, date, account.id);
+		await createTransaction(description, Number(amount), date, account.id);
 		open = false;
 		description = '';
-		amount = 0;
+		amount = '';
 		date = new Date().toISOString().slice(0, 10);
 	}
+
+	$effect(() => {
+		if (open) {
+			descriptionInput?.focus();
+		}
+	});
 </script>
 
 <Drawer.Root bind:open>
@@ -36,6 +43,7 @@
 					type="text"
 					placeholder="Description"
 					required={true}
+					bind:ref={descriptionInput}
 					bind:value={description}
 				/>
 			</div>

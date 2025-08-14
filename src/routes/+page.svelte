@@ -14,6 +14,9 @@
 	const id = $props.id();
 	let name = $state('');
 	let showAddAccountDrawer = $state(false);
+	const total = $derived(
+		Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)
+	);
 
 	async function addAccount(event: Event) {
 		event.preventDefault();
@@ -39,9 +42,7 @@
 	<Table.Footer>
 		<Table.Row>
 			<Table.Cell>Total</Table.Cell>
-			<Table.Cell class="text-right"
-				>{Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)}</Table.Cell
-			>
+			<Table.Cell class="text-right">{total}</Table.Cell>
 		</Table.Row>
 	</Table.Footer>
 </Table.Root>
