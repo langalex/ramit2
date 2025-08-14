@@ -7,7 +7,9 @@
 	import { create as createAccount } from '$lib/models/account.svelte';
 
 	const { data } = $props();
+	const { balancesByAccount } = data;
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
+
 	const id = $props.id();
 	let name = $state('');
 	let showAddAccountDrawer = $state(false);
@@ -28,7 +30,7 @@
 					><a class="inline-block w-full" href={`/transactions?id=${account.id}`}>{account.name}</a
 					></Table.Cell
 				>
-				<Table.Cell class="text-right">{account.balance}</Table.Cell>
+				<Table.Cell class="text-right">{balancesByAccount[account.id] ?? 0}</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>
@@ -36,7 +38,7 @@
 		<Table.Row>
 			<Table.Cell>Total</Table.Cell>
 			<Table.Cell class="text-right"
-				>{accounts.reduce((acc, account) => acc + account.balance, 0)}</Table.Cell
+				>{Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)}</Table.Cell
 			>
 		</Table.Row>
 	</Table.Footer>

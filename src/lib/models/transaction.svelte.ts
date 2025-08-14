@@ -37,6 +37,7 @@ export const remove = async (id: string): Promise<void> => {
 };
 
 const transactionsByAccount = $state<Record<string, Transaction[]>>({});
+const balancesByAccount = $state<Record<string, number>>({});
 
 transactionDb
 	.changes({
@@ -95,3 +96,46 @@ export const forAccount = async (account: Account): Promise<Transaction[]> => {
 	}
 	return transactionsByAccount[account.id]!;
 };
+
+export const balancesForAccounts = async (accounts: Account[]): Promise<Record<string, number>> => {
+	if (Object.keys(balancesByAccount).length === 0) {
+		const designDoc = {
+			_id: '_design/balances',
+			views: {
+				byAccountId: {
+					map: `function (doc) {
+						if (doc.type === 'Transaction') {
+							emit(doc.accountId, doc.amount);
+						}
+					}`,
+					reduce: '_sum'
+				}
+			}
+		};
+
+		if (!(await docExists('_design/balances'))) {
+			// @ts-expect-error db expects a TransactionDoc but we are adding a design doc
+			await transactionDb.put(designDoc);
+		}
+
+		const result = await transactionDb.query('balances/byAccountId', {
+			reduce: true,
+			group: true,
+			group_level: 1,
+			keys: accounts.map((a) => a.id)
+		});
+		result.rows.forEach((row) => {
+			balancesByAccount[row.key] = row.value;
+		});
+	}
+	return balancesByAccount;
+};
+
+async function docExists(id: string): Promise<boolean> {
+	try {
+		await transactionDb.get(id);
+		return true;
+	} catch {
+		return false;
+	}
+}
