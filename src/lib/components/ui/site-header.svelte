@@ -7,7 +7,7 @@
 	<div class="container-wrapper">
 		<div class="flex items-center">
 			<div>
-				{#if resolve(page.url.pathname) !== '/'}
+				{#if page.url.pathname !== resolve('/')}
 					<a href={resolve('/')}>back</a>
 				{/if}
 			</div>
