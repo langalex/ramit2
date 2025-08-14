@@ -9,7 +9,6 @@
 	const { balancesByAccount } = data;
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
 
-	let name = $state('');
 	let showAddAccountDrawer = $state(false);
 	const total = $derived(
 		Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)
