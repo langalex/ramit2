@@ -46,19 +46,26 @@ transactionDb
 		include_docs: true
 	})
 	.on('change', (change) => {
-		const doc = change.doc;
-		if (!doc) return;
+		if (!change.doc) return;
 
 		if (change.deleted) {
+			const doc = change.doc as { _id: string; _rev: string };
 			Object.values(transactionsByAccount).forEach((transactions) => {
 				const index = transactions.findIndex((t) => t.id === doc._id);
 				if (index !== -1) {
+					const transaction = transactions[index];
+					const balance = balancesByAccount[transaction.accountId];
+					if (balance !== undefined) {
+						balancesByAccount[transaction.accountId] = balance - transaction.amount;
+					}
 					transactions.splice(index, 1);
 				}
 			});
-			const balance = balancesByAccount[doc.accountId] ?? 0;
-			balancesByAccount[doc.accountId] = balance - doc.amount;
-		} else if (doc.type === 'Transaction') {
+		} else {
+			const doc = change.doc;
+			if (doc.type !== 'Transaction') {
+				return;
+			}
 			if (!transactionsByAccount[doc.accountId]) {
 				transactionsByAccount[doc.accountId] = [];
 			}
