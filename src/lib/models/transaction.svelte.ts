@@ -78,7 +78,6 @@ transactionDb
 export const forAccount = async (account: Account): Promise<Transaction[]> => {
 	if (!transactionsByAccount[account.id]) {
 		const transactions: Transaction[] = [];
-		transactionsByAccount[account.id] = transactions;
 		await transactionDb.createIndex({
 			index: {
 				fields: ['type', 'accountId']
@@ -97,6 +96,7 @@ export const forAccount = async (account: Account): Promise<Transaction[]> => {
 				accountId: doc.accountId
 			});
 		});
+		transactionsByAccount[account.id] = transactions;
 	}
 	return transactionsByAccount[account.id]!;
 };
