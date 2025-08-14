@@ -22,8 +22,10 @@ jobs:
         run: bun lint
       - name: Install browser
         run: bun playwright install
-      - name: Run tests
-        run: bun test
+      - name: Run unit tests
+        run: bun test:unit
+      - name: Run e2e tests
+        run: bun test:e2e
   automerge:
     needs: test
     runs-on: ubuntu-latest
