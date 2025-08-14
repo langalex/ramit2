@@ -56,6 +56,8 @@ transactionDb
 					transactions.splice(index, 1);
 				}
 			});
+			const balance = balancesByAccount[doc.accountId] ?? 0;
+			balancesByAccount[doc.accountId] = balance - doc.amount;
 		} else if (doc.type === 'Transaction') {
 			if (!transactionsByAccount[doc.accountId]) {
 				transactionsByAccount[doc.accountId] = [];
@@ -68,6 +70,8 @@ transactionDb
 				date: doc.date,
 				accountId: doc.accountId
 			});
+			const balance = balancesByAccount[doc.accountId] ?? 0;
+			balancesByAccount[doc.accountId] = balance + doc.amount;
 		}
 	});
 
