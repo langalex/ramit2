@@ -1,18 +1,23 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { onDestroy } from 'svelte';
 
 	import { resolve } from '$app/paths';
 	import AddAccountDrawer from './AddAccountDrawer.svelte';
 
 	const { data } = $props();
-	const { balancesByAccount } = data;
+	const { balancesByAccount, cancel } = data;
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
 
 	let showAddAccountDrawer = $state(false);
 	const total = $derived(
 		Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)
 	);
+
+	onDestroy(() => {
+		cancel();
+	});
 </script>
 
 <Table.Root>
