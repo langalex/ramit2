@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import * as accountModel from './account.svelte';
 import db from '../db';
+import { waitFor } from '$lib/test-helpers/wait-for';
 
 describe('account model', () => {
 	let testDb: ReturnType<typeof db>;
@@ -67,19 +68,4 @@ describe('account model', () => {
 			expect(found).toBeUndefined();
 		});
 	});
-
-	function waitFor(condition: () => boolean, timeout = 1000) {
-		return new Promise((resolve) => {
-			const interval = setInterval(() => {
-				if (condition()) {
-					clearInterval(interval);
-					resolve(true);
-				}
-			}, 10);
-			setTimeout(() => {
-				clearInterval(interval);
-				resolve(false);
-			}, timeout);
-		});
-	}
 });

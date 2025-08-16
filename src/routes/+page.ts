@@ -2,12 +2,15 @@ import { all } from '$lib/models/account.svelte';
 import { balancesForAccounts } from '$lib/models/transaction.svelte';
 
 export const load = async () => {
-	const [accounts, cancel] = await all();
+	const [accounts, cancelAccounts] = await all();
+	const [balancesByAccount, cancelBalances] = await balancesForAccounts(accounts.map((a) => a.id));
 
-	const balancesByAccount = await balancesForAccounts(accounts);
 	return {
 		accounts,
 		balancesByAccount,
-		cancel
+		cancel: () => {
+			cancelAccounts();
+			cancelBalances();
+		}
 	};
 };

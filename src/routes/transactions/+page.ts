@@ -12,9 +12,10 @@ export const load = async ({ url }) => {
 		redirect(302, '/');
 	}
 
-	const transactions = await forAccount(account);
+	const [transactions, cancel] = await forAccount(account.id);
 	return {
 		account,
-		transactions
+		transactions,
+		cancel
 	};
 };

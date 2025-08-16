@@ -1,5 +1,4 @@
 import db from '$lib/db';
-import type { Account } from './account.svelte';
 const transactionDb = db<TransactionDoc>();
 
 export type Transaction = {
@@ -19,14 +18,24 @@ export const create = async (
 	amount: number,
 	date: string,
 	accountId: string
-): Promise<void> => {
-	await transactionDb.post({
+): Promise<Transaction> => {
+	if (!description || !date || !accountId) {
+		throw new Error('Invalid transaction');
+	}
+	const doc = await transactionDb.post({
 		type: 'Transaction',
 		description,
 		amount,
 		date,
 		accountId
 	});
+	return {
+		id: doc.id,
+		description,
+		amount,
+		date,
+		accountId
+	};
 };
 
 export const remove = async (id: string): Promise<void> => {
@@ -36,40 +45,36 @@ export const remove = async (id: string): Promise<void> => {
 	}
 };
 
-const transactionsByAccount = $state<Record<string, Transaction[]>>({});
-const balancesByAccount = $state<Record<string, number>>({});
-
-transactionDb
-	.changes({
+export const forAccount = async (accountId: string): Promise<[Transaction[], () => void]> => {
+	const transactions = $state<Transaction[]>([]);
+	await transactionDb.createIndex({
+		index: {
+			fields: ['type', 'accountId']
+		}
+	});
+	const result = await transactionDb.find({
+		selector: { type: 'Transaction', accountId: accountId }
+		// sort: ['date']
+	});
+	const changes = transactionDb.changes({
 		since: 'now',
 		live: true,
 		include_docs: true
-	})
-	.on('change', (change) => {
+	});
+	changes.on('change', (change) => {
 		if (!change.doc) return;
 
 		if (change.deleted) {
 			const doc = change.doc as { _id: string; _rev: string };
-			Object.values(transactionsByAccount).forEach((transactions) => {
-				const index = transactions.findIndex((t) => t.id === doc._id);
-				if (index !== -1) {
-					const transaction = transactions[index];
-					const balance = balancesByAccount[transaction.accountId];
-					if (balance !== undefined) {
-						balancesByAccount[transaction.accountId] = balance - transaction.amount;
-					}
-					transactions.splice(index, 1);
-				}
-			});
+			const index = transactions.findIndex((t) => t.id === doc._id);
+			if (index !== -1) {
+				transactions.splice(index, 1);
+			}
 		} else {
 			const doc = change.doc;
-			if (doc.type !== 'Transaction') {
+			if (doc.type !== 'Transaction' || doc.accountId !== accountId) {
 				return;
 			}
-			if (!transactionsByAccount[doc.accountId]) {
-				transactionsByAccount[doc.accountId] = [];
-			}
-			const transactions = transactionsByAccount[doc.accountId]!;
 			transactions.push({
 				id: doc._id,
 				description: doc.description,
@@ -77,69 +82,83 @@ transactionDb
 				date: doc.date,
 				accountId: doc.accountId
 			});
-			const balance = balancesByAccount[doc.accountId] ?? 0;
-			balancesByAccount[doc.accountId] = balance + doc.amount;
 		}
 	});
-
-export const forAccount = async (account: Account): Promise<Transaction[]> => {
-	if (!transactionsByAccount[account.id]) {
-		const transactions: Transaction[] = [];
-		await transactionDb.createIndex({
-			index: {
-				fields: ['type', 'accountId']
-			}
+	result.docs.forEach((doc) => {
+		transactions.push({
+			id: doc._id,
+			amount: doc.amount,
+			description: doc.description,
+			date: doc.date,
+			accountId: doc.accountId
 		});
-		const result = await transactionDb.find({
-			selector: { type: 'Transaction', accountId: account.id }
-			// sort: ['date']
-		});
-		result.docs.forEach((doc) => {
-			transactions.push({
-				id: doc._id,
-				amount: doc.amount,
-				description: doc.description,
-				date: doc.date,
-				accountId: doc.accountId
-			});
-		});
-		transactionsByAccount[account.id] = transactions;
-	}
-	return transactionsByAccount[account.id]!;
+	});
+	return [transactions, () => changes.cancel()];
 };
 
-export const balancesForAccounts = async (accounts: Account[]): Promise<Record<string, number>> => {
-	if (Object.keys(balancesByAccount).length === 0) {
-		const designDoc = {
-			_id: '_design/balances',
-			views: {
-				byAccountId: {
-					map: `function (doc) {
+export const balancesForAccounts = async (
+	accountIds: string[]
+): Promise<[Record<string, number>, () => void]> => {
+	const balancesByAccountId = $state<Record<string, number>>({});
+	accountIds.forEach((accountId) => {
+		balancesByAccountId[accountId] = 0;
+	});
+	const designDoc = {
+		_id: '_design/balances',
+		views: {
+			byAccountId: {
+				map: `function (doc) {
 						if (doc.type === 'Transaction') {
 							emit(doc.accountId, doc.amount);
 						}
 					}`,
-					reduce: '_sum'
-				}
+				reduce: '_sum'
 			}
-		};
-
-		if (!(await docExists('_design/balances'))) {
-			// @ts-expect-error db expects a TransactionDoc but we are adding a design doc
-			await transactionDb.put(designDoc);
 		}
+	};
 
-		const result = await transactionDb.query('balances/byAccountId', {
-			reduce: true,
-			group: true,
-			group_level: 1,
-			keys: accounts.map((a) => a.id)
-		});
-		result.rows.forEach((row) => {
-			balancesByAccount[row.key] = row.value;
-		});
+	if (!(await docExists('_design/balances'))) {
+		// @ts-expect-error db expects a TransactionDoc but we are adding a design doc
+		await transactionDb.put(designDoc);
 	}
-	return balancesByAccount;
+
+	const changes = transactionDb.changes({
+		since: 'now',
+		live: true,
+		include_docs: true
+	});
+	changes.on('change', (change) => {
+		if (!change.doc) return;
+
+		if (change.deleted) {
+			// we don't know which account the transaction was for, so we need to update all balances
+			accountIds.forEach((accountId) => {
+				balancesByAccountId[accountId] = 0;
+			});
+			updateBalances(balancesByAccountId);
+		} else {
+			const doc = change.doc;
+			if (doc.type !== 'Transaction' || !accountIds.includes(doc.accountId)) {
+				return;
+			}
+			balancesByAccountId[doc.accountId] += doc.amount;
+		}
+	});
+
+	await updateBalances(balancesByAccountId);
+	return [balancesByAccountId, () => changes.cancel()];
+};
+
+const updateBalances = async (balancesByAccountId: Record<string, number>): Promise<void> => {
+	const result = await transactionDb.query('balances/byAccountId', {
+		reduce: true,
+		group: true,
+		group_level: 1,
+		keys: Object.keys(balancesByAccountId)
+	});
+	result.rows.forEach((row) => {
+		balancesByAccountId[row.key] = row.value;
+	});
 };
 
 async function docExists(id: string): Promise<boolean> {

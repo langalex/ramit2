@@ -1,11 +1,17 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import AddTransactionDrawer from './AddTransactionDrawer.svelte';
 	import TransactionsTable from './TransactionsTable.svelte';
 
 	const { data } = $props();
 	const account = data.account;
 	const transactions = data.transactions;
+	const cancel = data.cancel;
 	let showAddTransactionDrawer = $state(false);
+
+	onDestroy(() => {
+		cancel();
+	});
 </script>
 
 <div class="flex p-1">
