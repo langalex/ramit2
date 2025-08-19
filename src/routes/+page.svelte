@@ -2,13 +2,14 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { onDestroy } from 'svelte';
+	import BalanceChart from '$lib/components/BalanceChart.svelte';
 
 	import { resolve } from '$app/paths';
 	import AddAccountDrawer from './AddAccountDrawer.svelte';
 	import { formatAmount } from '$lib/utils/format';
 
 	const { data } = $props();
-	const { balancesByAccount, cancel } = data;
+	const { balancesByAccount, balanceHistoriesByAccount, cancel } = data;
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
 
 	let showAddAccountDrawer = $state(false);
@@ -22,6 +23,13 @@
 </script>
 
 <Table.Root>
+	<Table.Header>
+		<Table.Row>
+			<Table.Cell>Account</Table.Cell>
+			<Table.Cell class="text-center">Balance History</Table.Cell>
+			<Table.Cell class="text-right">Balance</Table.Cell>
+		</Table.Row>
+	</Table.Header>
 	<Table.Body>
 		{#each accounts as account (account.id)}
 			<Table.Row>
@@ -30,6 +38,9 @@
 						>{account.name}</a
 					></Table.Cell
 				>
+				<Table.Cell class="p-0 text-center">
+					<BalanceChart balanceHistory={balanceHistoriesByAccount[account.id] ?? {}} />
+				</Table.Cell>
 				<Table.Cell class="text-right"
 					>{formatAmount(balancesByAccount[account.id] ?? 0)}</Table.Cell
 				>
@@ -38,8 +49,8 @@
 	</Table.Body>
 	<Table.Footer>
 		<Table.Row>
-			<Table.Cell>Total</Table.Cell>
-			<Table.Cell class="text-right">{formatAmount(total)}</Table.Cell>
+			<Table.Cell colspan={2}>Total</Table.Cell>
+			<Table.Cell class="text-center">{formatAmount(total)}</Table.Cell>
 		</Table.Row>
 	</Table.Footer>
 </Table.Root>

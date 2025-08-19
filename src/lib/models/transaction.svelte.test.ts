@@ -221,4 +221,95 @@ describe('transaction model', () => {
 			cancel();
 		});
 	});
+
+	describe('balanceHistoriesForAccounts', () => {
+		it('should return empty histories for accounts with no transactions', async () => {
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1']);
+			cancel();
+
+			expect(histories['a1']).toEqual({});
+		});
+
+		it('should calculate correct balance history across multiple months', async () => {
+			await transactionModel.create('Income', 1000, '2024-01-15', 'a1');
+			await transactionModel.create('Expense', -200, '2024-02-10', 'a1');
+			await transactionModel.create('Income', 500, '2024-03-05', 'a1');
+
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1']);
+			cancel();
+
+			expect(histories['a1']).toEqual({
+				'2024-01': 1000,
+				'2024-02': 800,
+				'2024-03': 1300
+			});
+		});
+
+		it('should handle multiple accounts with separate histories', async () => {
+			await transactionModel.create('Income A1', 1000, '2024-01-15', 'a1');
+			await transactionModel.create('Income A2', 500, '2024-01-20', 'a2');
+			await transactionModel.create('Expense A1', -300, '2024-02-10', 'a1');
+			await transactionModel.create('Expense A2', -100, '2024-02-15', 'a2');
+
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1', 'a2']);
+			cancel();
+
+			expect(histories['a1']).toEqual({
+				'2024-01': 1000,
+				'2024-02': 700
+			});
+			expect(histories['a2']).toEqual({
+				'2024-01': 500,
+				'2024-02': 400
+			});
+		});
+
+		it('should update histories when transactions are added', async () => {
+			await transactionModel.create('Initial', 1000, '2024-01-15', 'a1');
+
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1']);
+
+			await transactionModel.create('Additional', 500, '2024-02-10', 'a1');
+			await waitFor(() => Object.keys(histories['a1']).length === 2);
+			cancel();
+
+			expect(histories['a1']).toEqual({
+				'2024-01': 1000,
+				'2024-02': 1500
+			});
+		});
+
+		it('should update histories when transactions are removed', async () => {
+			const transaction1 = await transactionModel.create('Transaction 1', 1000, '2024-01-15', 'a1');
+			const transaction2 = await transactionModel.create('Transaction 2', 500, '2024-02-10', 'a1');
+
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1']);
+
+			await transactionModel.remove(transaction2.id);
+			await waitFor(() => Object.keys(histories['a1']).length === 1);
+			expect(histories['a1']).toEqual({
+				'2024-01': 1000
+			});
+
+			await transactionModel.remove(transaction1.id);
+			await waitFor(() => Object.keys(histories['a1']).length === 0);
+			expect(histories['a1']).toEqual({});
+
+			cancel();
+		});
+
+		it('should return the balance of the previous month for months with no transactions', async () => {
+			await transactionModel.create('Initial', 1000, '2024-01-15', 'a1');
+			await transactionModel.create('Later', 1000, '2024-03-15', 'a1');
+
+			const [histories, cancel] = await transactionModel.balanceHistoriesForAccounts(['a1']);
+			cancel();
+
+			expect(histories['a1']).toEqual({
+				'2024-01': 1000,
+				'2024-02': 1000,
+				'2024-03': 2000
+			});
+		});
+	});
 });
