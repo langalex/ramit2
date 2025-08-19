@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as accountModel from '$lib/models/account.svelte';
 import * as transactionModel from '$lib/models/transaction.svelte';
 import db from '$lib/db';
-import Page from './+page.svelte';
+import Page, { type RamitAccount, type RamitTransaction } from './+page.svelte';
 import { render } from 'vitest-browser-svelte';
 
 // Create mock functions that we can call to simulate RemoteStorage events
-let accountCallback: ((account: any) => void) | null = null;
-let transactionCallback: ((transaction: any) => void) | null = null;
+let accountCallback: ((account: RamitAccount) => void) | null = null;
+let transactionCallback: ((transaction: RamitTransaction) => void) | null = null;
 
 // Mock RemoteStorage and Widget to avoid external dependencies
 vi.mock('remotestoragejs', () =>
@@ -48,7 +48,7 @@ const simulateTransactionImport = async (transactionData: {
 	amount: number;
 	date: number;
 }) => {
-	await transactionCallback!(transactionData);
+	transactionCallback!(transactionData);
 };
 
 describe('Import Page Logic', () => {

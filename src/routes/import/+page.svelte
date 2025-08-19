@@ -1,3 +1,18 @@
+<script module>
+	export type RamitAccount = {
+		id: string;
+		name: string;
+	};
+
+	export type RamitTransaction = {
+		id: string;
+		account_id: string;
+		description: string;
+		amount: number;
+		date: number;
+	};
+</script>
+
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import RemoteStorage from 'remotestoragejs';
@@ -14,29 +29,18 @@
 		find as findTransaction,
 		type Transaction
 	} from '$lib/models/transaction.svelte';
+	import type BaseClient from 'remotestoragejs/release/types/baseclient';
+	import type { ChangeObj } from 'remotestoragejs/release/types/interfaces/change_obj';
 
 	const offsetToDateString = (offset: number): string => {
 		const date = new Date(offset);
 		return date.toISOString().substring(0, 10);
 	};
 
-	type RamitAccount = {
-		id: string;
-		name: string;
-	};
-
-	type RamitTransaction = {
-		id: string;
-		account_id: string;
-		description: string;
-		amount: number;
-		date: number;
-	};
-
 	const initStorage = (): RemoteStorage => {
 		const Ramit = {
 			name: 'ramit',
-			builder: function (privateClient) {
+			builder: function (privateClient: BaseClient) {
 				privateClient.declareType('account', {
 					description: 'an account with a balance',
 					type: 'object',
@@ -79,10 +83,13 @@
 					exports: {
 						onAddAccount: function (callback: (account: RamitAccount) => void) {
 							privateClient.on('change', function (e) {
+								const change = e as ChangeObj;
 								const newValue =
-									typeof e.newValue === 'string' ? JSON.parse(e.newValue) : e.newValue;
+									typeof change.newValue === 'string'
+										? JSON.parse(change.newValue)
+										: change.newValue;
 								if (
-									e.oldValue === undefined &&
+									change.oldValue === undefined &&
 									newValue['@context'] === 'http://remotestorage.io/spec/modules/ramit/account'
 								) {
 									callback(newValue);
@@ -92,10 +99,13 @@
 
 						onAddTransaction: function (callback: (transaction: RamitTransaction) => void) {
 							privateClient.on('change', function (e) {
+								const change = e as ChangeObj;
 								const newValue =
-									typeof e.newValue === 'string' ? JSON.parse(e.newValue) : e.newValue;
+									typeof change.newValue === 'string'
+										? JSON.parse(change.newValue)
+										: change.newValue;
 								if (
-									e.oldValue === undefined &&
+									change.oldValue === undefined &&
 									newValue['@context'] === 'http://remotestorage.io/spec/modules/ramit/transaction'
 								) {
 									callback(newValue);
