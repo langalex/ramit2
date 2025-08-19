@@ -82,12 +82,13 @@ export const forAccount = async (accountId: string): Promise<[Transaction[], () 
 	const transactions = $state<Transaction[]>([]);
 	await transactionDb.createIndex({
 		index: {
-			fields: ['type', 'accountId']
+			fields: ['type', 'accountId', 'date']
 		}
 	});
 	const result = await transactionDb.find({
-		selector: { type: 'Transaction', accountId: accountId }
-		// sort: ['date']
+		selector: { type: 'Transaction', accountId: accountId },
+		sort: [{ type: 'desc' }, { accountId: 'desc' }, { date: 'desc' }],
+		limit: 200
 	});
 	const changes = transactionDb.changes({
 		since: 'now',
