@@ -1,0 +1,13 @@
+---
+description: General rules
+globs:
+alwaysApply: true
+---
+
+- this project uses bun as runtime/package manager
+- this project uses SvelteKit / Svelte 5. Don't generate code for earlier Svelte versions. Use runes.
+
+# Testing
+
+- run unit tests with `bun vitest run <file>`
+- when generating new code, always add unit tests
