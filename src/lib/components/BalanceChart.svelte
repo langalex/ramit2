@@ -12,9 +12,10 @@
 	type ChartPoint = { date: string; balance: number };
 
 	const chartData = $derived(() => {
-		const entries: ChartPoint[] = Object.entries(balanceHistory || {})
-			.map(([date, balance]) => ({ date, balance }))
-			.sort((a, b) => a.date.localeCompare(b.date));
+		const entries: ChartPoint[] = Object.entries(balanceHistory).map(([date, balance]) => ({
+			date,
+			balance
+		}));
 		return entries;
 	});
 

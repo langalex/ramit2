@@ -116,28 +116,6 @@ describe('BalanceChart', () => {
 			expect(container).toHaveTextContent('No data');
 		});
 
-		it('should sort dates correctly', () => {
-			const balanceHistory = {
-				'2024-01-03': 300,
-				'2024-01-01': 100,
-				'2024-01-02': 200
-			};
-
-			const { component } = render(BalanceChart, {
-				props: {
-					balanceHistory,
-					width: 150,
-					height: 30
-				}
-			});
-
-			const state = component.chartState();
-
-			expect(state.chartData[0].date).toBe('2024-01-01');
-			expect(state.chartData[1].date).toBe('2024-01-02');
-			expect(state.chartData[2].date).toBe('2024-01-03');
-		});
-
 		it('should handle zero balance range correctly', () => {
 			const balanceHistory = {
 				'2024-01-01': 0,

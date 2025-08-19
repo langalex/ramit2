@@ -194,8 +194,7 @@ const updateBalances = async (balancesByAccountId: Record<string, number>): Prom
 };
 
 export const balanceHistoriesForAccounts = async (
-	accountIds: string[],
-	since?: Temporal.PlainDate
+	accountIds: string[]
 ): Promise<[Record<string, Record<string, number>>, () => void]> => {
 	const balanceHistoriesByAccountId = $state<Record<string, Record<string, number>>>({});
 	accountIds.forEach((accountId) => {
@@ -235,25 +234,24 @@ export const balanceHistoriesForAccounts = async (
 			accountIds.forEach((accountId) => {
 				balanceHistoriesByAccountId[accountId] = {};
 			});
-			updateBalanceHistories(balanceHistoriesByAccountId, accountIds, since);
+			updateBalanceHistories(balanceHistoriesByAccountId, accountIds);
 		} else {
 			const doc = change.doc;
 			if (doc.type !== 'Transaction' || !accountIds.includes(doc.accountId)) {
 				return;
 			}
 			// Update the specific period for the changed transaction
-			updateBalanceHistories(balanceHistoriesByAccountId, accountIds, since);
+			updateBalanceHistories(balanceHistoriesByAccountId, accountIds);
 		}
 	});
 
-	await updateBalanceHistories(balanceHistoriesByAccountId, accountIds, since);
+	await updateBalanceHistories(balanceHistoriesByAccountId, accountIds);
 	return [balanceHistoriesByAccountId, () => changes.cancel()];
 };
 
 const updateBalanceHistories = async (
 	balanceHistoriesByAccountId: Record<string, Record<string, number>>,
-	accountIds: string[],
-	since?: Temporal.PlainDate
+	accountIds: string[]
 ): Promise<void> => {
 	// Reset all histories
 	Object.keys(balanceHistoriesByAccountId).forEach((accountId: string) => {
@@ -272,7 +270,7 @@ const updateBalanceHistories = async (
 			reduce: true,
 			group: true,
 			group_level: 2,
-			startkey: [accountId, since?.toString()?.substring(0, 7) ?? ''],
+			startkey: [accountId],
 			endkey: [accountId, '\uffff']
 		});
 

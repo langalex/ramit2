@@ -5,13 +5,8 @@ export const load = async () => {
 	const [accounts, cancelAccounts] = await all();
 	const [balancesByAccount, cancelBalances] = await balancesForAccounts(accounts.map((a) => a.id));
 	const [balanceHistoriesByAccount, cancelBalanceHistories] = await balanceHistoriesForAccounts(
-		accounts.map((a) => a.id),
-		oneYearAgo()
+		accounts.map((a) => a.id)
 	);
-
-	function oneYearAgo() {
-		return Temporal.Now.plainDateISO().subtract({ years: 1 });
-	}
 
 	return {
 		accounts,

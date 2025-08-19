@@ -16,6 +16,19 @@
 	const total = $derived(
 		Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)
 	);
+	function filterRecent(balanceHistory: Record<string, number>): Record<string, number> {
+		const since = oneYearAgo();
+		return Object.fromEntries(
+			Object.entries(balanceHistory).filter(([yearMonth]) => {
+				return yearMonth > since;
+			})
+		);
+	}
+
+	function oneYearAgo(): string {
+		const date = Temporal.Now.plainDateISO().subtract({ years: 1 });
+		return date.year + '-' + date.month;
+	}
 
 	onDestroy(() => {
 		cancel();
@@ -39,7 +52,9 @@
 					></Table.Cell
 				>
 				<Table.Cell class="p-0 text-center">
-					<BalanceChart balanceHistory={balanceHistoriesByAccount[account.id] ?? {}} />
+					<BalanceChart
+						balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
+					/>
 				</Table.Cell>
 				<Table.Cell class="text-right"
 					>{formatAmount(balancesByAccount[account.id] ?? 0)}</Table.Cell
