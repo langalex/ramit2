@@ -64,7 +64,7 @@
 {#if chartData().length > 1}
   <svg {width} {height}>
     <path d={pathD()} stroke="currentColor" stroke-width="2" fill="none" class="text-blue-600" />
-    {#each chartPoints() as point}
+    {#each chartPoints() as point (point.x)}
       <circle cx={point.x} cy={point.y} r="2" fill="currentColor" class="text-blue-600" />
     {/each}
     <line
