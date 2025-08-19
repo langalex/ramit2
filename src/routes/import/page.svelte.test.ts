@@ -4,6 +4,7 @@ import * as transactionModel from '$lib/models/transaction.svelte';
 import db from '$lib/db';
 import Page, { type RamitAccount, type RamitTransaction } from './+page.svelte';
 import { render } from 'vitest-browser-svelte';
+import { waitFor } from '@testing-library/dom';
 
 // Create mock functions that we can call to simulate RemoteStorage events
 let accountCallback: ((account: RamitAccount) => void) | null = null;
@@ -134,7 +135,9 @@ describe('Import Page Logic', () => {
 			// Simulate the RemoteStorage event
 			await simulateTransactionImport(transactionData);
 
-			expect(container).toHaveTextContent('1 new transactions imported');
+			await waitFor(() => {
+				expect(container).toHaveTextContent('1 new transactions imported');
+			});
 
 			// Verify the transaction was created by the page logic with proper conversion
 			const found = await transactionModel.find(transactionData.id);
@@ -169,7 +172,9 @@ describe('Import Page Logic', () => {
 			// Simulate the RemoteStorage event
 			await simulateTransactionImport(updatedData);
 
-			expect(container).toHaveTextContent('1 updated transactions imported');
+			await waitFor(() => {
+				expect(container).toHaveTextContent('1 updated transactions imported');
+			});
 
 			// Verify the transaction was updated by the page logic
 			const found = await transactionModel.find(originalTransaction.id);
