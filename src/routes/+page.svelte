@@ -12,10 +12,14 @@
 	const { balancesByAccount, balanceHistoriesByAccount, cancel } = data;
 	const accounts = $derived([...data.accounts].sort((a, b) => a.name.localeCompare(b.name)));
 
+	let chartContainer = $state<HTMLDivElement | null>(null);
 	let showAddAccountDrawer = $state(false);
+
 	const total = $derived(
 		Object.values(balancesByAccount).reduce((acc, balance) => acc + balance, 0)
 	);
+	const chartWidth = $derived(chartContainer?.clientWidth ?? 150);
+
 	function filterRecent(balanceHistory: Record<string, number>): Record<string, number> {
 		const since = oneYearAgo();
 		return Object.fromEntries(
@@ -51,8 +55,10 @@
 						>{account.name}</a
 					></Table.Cell
 				>
-				<Table.Cell class="p-0 text-center">
+				<Table.Cell class="p-0 text-center" bind:ref={chartContainer}>
 					<BalanceChart
+						width={chartWidth}
+						height={30}
 						balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
 					/>
 				</Table.Cell>
