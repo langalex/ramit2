@@ -5,6 +5,7 @@
 
 	import { resolve } from '$app/paths';
 	import AddAccountDrawer from './AddAccountDrawer.svelte';
+	import { formatAmount } from '$lib/utils/format';
 
 	const { data } = $props();
 	const { balancesByAccount, cancel } = data;
@@ -29,14 +30,16 @@
 						>{account.name}</a
 					></Table.Cell
 				>
-				<Table.Cell class="text-right">{balancesByAccount[account.id] ?? 0}</Table.Cell>
+				<Table.Cell class="text-right"
+					>{formatAmount(balancesByAccount[account.id] ?? 0)}</Table.Cell
+				>
 			</Table.Row>
 		{/each}
 	</Table.Body>
 	<Table.Footer>
 		<Table.Row>
 			<Table.Cell>Total</Table.Cell>
-			<Table.Cell class="text-right">{total}</Table.Cell>
+			<Table.Cell class="text-right">{formatAmount(total)}</Table.Cell>
 		</Table.Row>
 	</Table.Footer>
 </Table.Root>

@@ -17,24 +17,56 @@ export const create = async (
 	description: string,
 	amount: number,
 	date: string,
-	accountId: string
+	accountId: string,
+	id?: string
 ): Promise<Transaction> => {
-	if (!description || !date || !accountId) {
+	if (!date || !accountId) {
 		throw new Error('Invalid transaction');
 	}
-	const doc = await transactionDb.post({
-		type: 'Transaction',
-		description,
-		amount,
-		date,
-		accountId
-	});
+	const doc = await (id
+		? transactionDb.put({
+				type: 'Transaction',
+				description,
+				amount,
+				date,
+				accountId,
+				_id: id
+			})
+		: transactionDb.post({
+				type: 'Transaction',
+				description,
+				amount,
+				date,
+				accountId
+			}));
 	return {
 		id: doc.id,
 		description,
 		amount,
 		date,
 		accountId
+	};
+};
+
+export const update = async (
+	description: string,
+	amount: number,
+	date: string,
+	id: string
+): Promise<Transaction> => {
+	const transactionDoc = await transactionDb.get(id);
+	await transactionDb.put({
+		...transactionDoc,
+		description,
+		amount,
+		date
+	});
+	return {
+		id,
+		description,
+		amount,
+		date,
+		accountId: transactionDoc.accountId
 	};
 };
 
@@ -117,7 +149,7 @@ export const balancesForAccounts = async (
 		}
 	};
 
-	if (!(await docExists('_design/balances'))) {
+	if (!(await find('_design/balances'))) {
 		// @ts-expect-error db expects a TransactionDoc but we are adding a design doc
 		await transactionDb.put(designDoc);
 	}
@@ -161,11 +193,17 @@ const updateBalances = async (balancesByAccountId: Record<string, number>): Prom
 	});
 };
 
-async function docExists(id: string): Promise<boolean> {
+export async function find(id: string): Promise<Transaction | undefined> {
 	try {
-		await transactionDb.get(id);
-		return true;
+		const doc = await transactionDb.get(id);
+		return {
+			id: doc._id,
+			amount: doc.amount,
+			description: doc.description,
+			date: doc.date,
+			accountId: doc.accountId
+		};
 	} catch {
-		return false;
+		return undefined;
 	}
 }

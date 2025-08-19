@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as transactionModel from './transaction.svelte';
-import * as accountModel from './account.svelte';
 import db from '../db';
 import { waitFor } from '$lib/test-helpers/wait-for';
 
@@ -28,6 +27,24 @@ describe('transaction model', () => {
 			expect(created.accountId).toBe('a1');
 		});
 
+		it('should create a transaction with a specified id', async () => {
+			const customId = 'custom-transaction-id';
+			const created = await transactionModel.create(
+				'Custom Transaction',
+				250,
+				'2024-01-01',
+				'a1',
+				customId
+			);
+
+			expect(created).toBeDefined();
+			expect(created.amount).toBe(250);
+			expect(created.description).toBe('Custom Transaction');
+			expect(created.date).toBe('2024-01-01');
+			expect(created.accountId).toBe('a1');
+			expect(created.id).toBe(customId);
+		});
+
 		it('should create a transaction with a negative amount', async () => {
 			const created = await transactionModel.create('Test Transaction', -100, '2024-01-01', 'a1');
 
@@ -43,7 +60,6 @@ describe('transaction model', () => {
 		});
 
 		it('error if transaction is invalid', async () => {
-			await expect(transactionModel.create('', 100, '2024-01-01', 'a1')).rejects.toThrow();
 			await expect(transactionModel.create('name', 100, '', 'a1')).rejects.toThrow();
 			await expect(transactionModel.create('name', 100, '2024-04-01', '')).rejects.toThrow();
 		});
@@ -67,6 +83,49 @@ describe('transaction model', () => {
 
 		it('should handle removing non-existent transaction gracefully', async () => {
 			await expect(transactionModel.remove('non-existent-id')).rejects.toThrow();
+		});
+	});
+
+	describe('find', () => {
+		it('should find transaction by id', async () => {
+			const transaction = await transactionModel.create(
+				'Test Transaction',
+				100,
+				'2024-01-01',
+				'a1'
+			);
+
+			const found = await transactionModel.find(transaction.id);
+			expect(found).toEqual(transaction);
+		});
+
+		it('should return undefined for non-existent id', async () => {
+			const found = await transactionModel.find('non-existent-id');
+			expect(found).toBeUndefined();
+		});
+	});
+
+	describe('update', () => {
+		it('should update an existing transaction', async () => {
+			const transaction = await transactionModel.create(
+				'Original Description',
+				100,
+				'2024-01-01',
+				'a1'
+			);
+
+			const updated = await transactionModel.update(
+				'Updated Description',
+				200,
+				'2024-01-02',
+				transaction.id
+			);
+
+			expect(updated.id).toBe(transaction.id);
+			expect(updated.description).toBe('Updated Description');
+			expect(updated.amount).toBe(200);
+			expect(updated.date).toBe('2024-01-02');
+			expect(updated.accountId).toBe('a1');
 		});
 	});
 

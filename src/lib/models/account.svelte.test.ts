@@ -24,6 +24,15 @@ describe('account model', () => {
 			expect(created?.name).toBe('Test Account');
 			expect(created?.id).toBeDefined();
 		});
+
+		it('should create an account with specified id', async () => {
+			const customId = 'custom-account-id';
+			const created = await accountModel.create('Custom Account', customId);
+
+			expect(created).toBeDefined();
+			expect(created.name).toBe('Custom Account');
+			expect(created.id).toBe(customId);
+		});
 	});
 
 	describe('all', () => {

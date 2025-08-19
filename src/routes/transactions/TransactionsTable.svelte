@@ -5,6 +5,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import type { Transaction } from '$lib/models/transaction.svelte.js';
 	import { remove as removeTransaction } from '$lib/models/transaction.svelte.js';
+	import { formatAmount } from '$lib/utils/format';
 
 	const { transactions }: { transactions: Transaction[] } = $props();
 	const months = $derived(
@@ -24,15 +25,15 @@
 			<Table.Row class="bg-gray-100">
 				<Table.Cell colspan={2}>{month}</Table.Cell>
 				<Table.Cell class="text-right">
-					{transactions.reduce((acc, t) => acc + t.amount, 0)}
+					{formatAmount(transactions.reduce((acc, t) => acc + t.amount, 0))}
 				</Table.Cell>
 				<Table.Cell></Table.Cell>
 			</Table.Row>
 			{#each transactions as transaction (transaction.id)}
 				<Table.Row>
 					<Table.Cell class="font-medium">{transaction.date}</Table.Cell>
-					<Table.Cell class="font-medium">{transaction.description}</Table.Cell>
-					<Table.Cell class="text-right">{transaction.amount}</Table.Cell>
+					<Table.Cell class="font-medium">{transaction.description || '-'}</Table.Cell>
+					<Table.Cell class="text-right">{formatAmount(transaction.amount)}</Table.Cell>
 					<Table.Cell>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
@@ -61,7 +62,7 @@
 			<Table.Cell>Total</Table.Cell>
 			<Table.Cell></Table.Cell>
 			<Table.Cell class="text-right"
-				>{transactions.reduce((acc, t) => acc + t.amount, 0)}</Table.Cell
+				>{formatAmount(transactions.reduce((acc, t) => acc + t.amount, 0))}</Table.Cell
 			>
 		</Table.Row>
 	</Table.Footer>

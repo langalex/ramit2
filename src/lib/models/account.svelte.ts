@@ -10,14 +10,20 @@ type AccountDoc = Omit<Account, 'id'> & {
 	type: 'Account';
 };
 
-export const create = async (name: string): Promise<Account> => {
+export const create = async (name: string, id?: string): Promise<Account> => {
 	if (!name) {
 		throw new Error('Name is required');
 	}
-	const doc = await accountDb.post({
-		type: 'Account',
-		name
-	});
+	const doc = await (id
+		? accountDb.put({
+				type: 'Account',
+				name,
+				_id: id
+			})
+		: accountDb.post({
+				type: 'Account',
+				name
+			}));
 
 	return {
 		id: doc.id,
