@@ -45,7 +45,7 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onclick={() => goto('/import')}>RemoteStorage Import</DropdownMenuItem
+            <DropdownMenuItem onclick={() => goto(resolve('/import'))}>RemoteStorage Import</DropdownMenuItem
             >
           </DropdownMenuContent>
         </DropdownMenu>
