@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as accountModel from '$lib/models/account.svelte';
 import * as transactionModel from '$lib/models/transaction.svelte';
 import db from '$lib/db';
-import Page, { type RamitAccount, type RamitTransaction } from './+page.svelte';
+import Page from './+page.svelte';
+import type { RamitAccount, RamitTransaction } from './page.d.ts';
 import { render } from 'vitest-browser-svelte';
 import { waitFor } from '@testing-library/dom';
 
