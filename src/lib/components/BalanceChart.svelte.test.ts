@@ -17,6 +17,7 @@ describe('BalanceChart', () => {
       expect(state.chartData).toEqual([]);
       expect(state.chartPoints).toEqual([]);
       expect(state.zeroLineY).toBe(0);
+      expect(state.yAxisTicks).toEqual([]);
     });
 
     it('should calculate chart data correctly for positive balances', () => {
@@ -116,6 +117,34 @@ describe('BalanceChart', () => {
       expect(container).toHaveTextContent('No data');
     });
 
+    it('should sort dates correctly', () => {
+      const balanceHistory = {
+        '2024-01-03': 300,
+
+        '2024-01-01': 100,
+
+        '2024-01-02': 200
+      };
+
+      const { component } = render(BalanceChart, {
+        props: {
+          balanceHistory,
+
+          width: 150,
+
+          height: 30
+        }
+      });
+
+      const state = component.chartState();
+
+      expect(state.chartData[0].date).toBe('2024-01-01');
+
+      expect(state.chartData[1].date).toBe('2024-01-02');
+
+      expect(state.chartData[2].date).toBe('2024-01-03');
+    });
+
     it('should handle zero balance range correctly', () => {
       const balanceHistory = {
         '2024-01-01': 0,
@@ -139,6 +168,75 @@ describe('BalanceChart', () => {
       // All points should have the same y value since balance range is 0
       expect(state.chartPoints[0].y).toBe(state.chartPoints[1].y);
       expect(state.chartPoints[1].y).toBe(state.chartPoints[2].y);
+    });
+
+    it('should generate y-axis ticks when showYAxis is true', () => {
+      const balanceHistory = {
+        '2024-01-01': 100,
+        '2024-01-02': 200,
+        '2024-01-03': 150
+      };
+
+      const { component } = render(BalanceChart, {
+        props: {
+          balanceHistory,
+          width: 150,
+          height: 30,
+          showYAxis: true
+        }
+      });
+
+      const state = component.chartState();
+      expect(state.yAxisTicks).toHaveLength(6); // 0 to 5 inclusive
+
+      // Check first and last tick values
+      expect(state.yAxisTicks[0].balance).toBe(100);
+      expect(state.yAxisTicks[5].balance).toBe(200);
+    });
+
+    it('should adjust chart positioning when y-axis is shown', () => {
+      const balanceHistory = {
+        '2024-01-01': 100,
+        '2024-01-02': 200
+      };
+
+      const { component } = render(BalanceChart, {
+        props: {
+          balanceHistory,
+          width: 150,
+          height: 30,
+          showYAxis: true
+        }
+      });
+
+      const state = component.chartState();
+
+      // Chart points should be positioned to account for y-axis space
+      expect(state.chartPoints[0].x).toBe(35); // First point starts at x=35 instead of x=5
+      expect(state.chartPoints[1].x).toBe(145); // Last point at right edge
+    });
+
+    it('should not generate y-axis ticks when showYAxis is false', () => {
+      const balanceHistory = {
+        '2024-01-01': 100,
+        '2024-01-02': 200
+      };
+
+      const { component } = render(BalanceChart, {
+        props: {
+          balanceHistory,
+          width: 150,
+          height: 30,
+          showYAxis: false
+        }
+      });
+
+      const state = component.chartState();
+      expect(state.yAxisTicks).toEqual([]);
+
+      // Chart points should use original positioning
+      expect(state.chartPoints[0].x).toBe(5);
+      expect(state.chartPoints[1].x).toBe(145);
     });
   });
 });
