@@ -1,18 +1,3 @@
-<script module>
-  export type RamitAccount = {
-    id: string;
-    name: string;
-  };
-
-  export type RamitTransaction = {
-    id: string;
-    account_id: string;
-    description: string;
-    amount: number;
-    date: number;
-  };
-</script>
-
 <script lang="ts">
   import * as Card from '$lib/components/ui/card/index.js';
   import RemoteStorage from 'remotestoragejs';
@@ -31,6 +16,7 @@
   } from '$lib/models/transaction.svelte';
   import type BaseClient from 'remotestoragejs/release/types/baseclient';
   import type { ChangeObj } from 'remotestoragejs/release/types/interfaces/change_obj';
+  import type { RamitAccount, RamitTransaction } from './page.d.ts';
 
   const offsetToDateString = (offset: number): string => {
     const date = new Date(offset);
