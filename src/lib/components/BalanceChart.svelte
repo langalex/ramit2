@@ -106,7 +106,7 @@
       />
 
       <!-- Y-axis ticks and labels -->
-      {#each yAxisTicks() as tick}
+      {#each yAxisTicks() as tick (tick.y)}
         <line
           x1="30"
           y1={tick.y}
