@@ -6,6 +6,7 @@ alwaysApply: true
 
 - this project uses bun as runtime/package manager
 - this project uses SvelteKit / Svelte 5. Don't generate code for earlier Svelte versions. Use runes.
+- the app runs under custom path. wrap any relative urls (e.g. `<a href="...">` or `goto('...')`) in a `resolve()` call.
 
 # Testing
 

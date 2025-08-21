@@ -48,6 +48,9 @@
             <DropdownMenuItem onclick={() => goto(resolve('/import'))}
               >RemoteStorage Import</DropdownMenuItem
             >
+            <DropdownMenuItem onclick={() => goto(resolve('/replicate'))}
+              >Replicate to CouchDB</DropdownMenuItem
+            >
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
