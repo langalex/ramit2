@@ -30,7 +30,7 @@
     "@testing-library/svelte": "^5.2.8",
     "@types/pouchdb-browser": "^6.1.5",
     "@vitest/browser": "^3.2.3",
-    "bits-ui": "^2.8.6",
+    "bits-ui": "^2.9.4",
     "chart.js": "^4.5.0",
     "clsx": "^2.1.1",
     "eslint": "^9.18.0",
