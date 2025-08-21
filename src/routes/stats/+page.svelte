@@ -8,7 +8,14 @@
   const balanceHistory = data.balanceHistory;
   const cancel = data.cancel;
   let chartContainer = $state<HTMLDivElement | null>(null);
-  const chartWidth = $derived(chartContainer?.clientWidth ?? 300);
+  const chartWidth = $derived(Object.keys(balanceHistory).length * 10);
+  let chartScrollArea: HTMLDivElement | null = $state(null);
+
+  $effect(() => {
+    if (chartScrollArea) {
+      chartScrollArea.scrollLeft = chartWidth;
+    }
+  });
 
   onDestroy(() => {
     cancel();
@@ -20,8 +27,16 @@
     <Card.Title>{account.name} Stats</Card.Title>
   </Card.Header>
   <Card.Content>
-    <div bind:this={chartContainer}>
-      <BalanceChart width={chartWidth} height={250} showYAxis={true} {balanceHistory} />
+    <div bind:this={chartScrollArea} class="overflow-x-scroll">
+      <div bind:this={chartContainer}>
+        <BalanceChart
+          width={chartWidth}
+          height={450}
+          showYAxis={true}
+          showXAxis={true}
+          {balanceHistory}
+        />
+      </div>
     </div>
   </Card.Content>
 </Card.Root>
