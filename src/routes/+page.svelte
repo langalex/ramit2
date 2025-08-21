@@ -56,11 +56,13 @@
           ></Table.Cell
         >
         <Table.Cell class="p-0 text-center" bind:ref={chartContainer}>
-          <BalanceChart
-            width={chartWidth}
-            height={30}
-            balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
-          />
+          <a href={resolve('/stats') + `?id=${account.id}`}>
+            <BalanceChart
+              width={chartWidth}
+              height={30}
+              balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
+            />
+          </a>
         </Table.Cell>
         <Table.Cell class="text-right"
           >{formatAmount(balancesByAccount[account.id] ?? 0)}</Table.Cell
