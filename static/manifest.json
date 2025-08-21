@@ -2,8 +2,9 @@
   "name": "Ramit2",
   "short_name": "Ramit2",
   "description": "Personal finance and budgeting application",
-  "start_url": "/ramit2",
+  "start_url": "https://langalex.github.io/ramit2",
   "display": "standalone",
+  "display_override": ["fullscreen", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#8554F6",
   "orientation": "portrait-primary",
@@ -11,14 +12,17 @@
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
