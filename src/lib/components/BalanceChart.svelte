@@ -43,6 +43,7 @@
     return entries;
   });
 
+  // svelte-ignore non_reactive_update
   let canvas: HTMLCanvasElement | null = null;
   let chart: Chart | null = null;
 
