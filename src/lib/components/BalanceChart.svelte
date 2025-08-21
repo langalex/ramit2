@@ -1,19 +1,34 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import {
+    Chart,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    LineController
+  } from 'chart.js';
+
+  Chart.register(CategoryScale, LinearScale, PointElement, LineElement, LineController);
+
   const {
     balanceHistory,
     width = 150,
     height = 30,
-    showYAxis = false
+    showYAxis = false,
+    showXAxis = false
   }: {
     balanceHistory: Record<string, number>;
     width?: number;
     height?: number;
     showYAxis?: boolean;
+    showXAxis?: boolean;
   } = $props<{
     balanceHistory: Record<string, number>;
     width?: number;
     height?: number;
     showYAxis?: boolean;
+    showXAxis?: boolean;
   }>();
 
   type ChartPoint = { date: string; balance: number };
@@ -28,115 +43,114 @@
     return entries;
   });
 
-  const chartPoints = $derived(() => {
-    if (chartData().length === 0) return [];
+  // svelte-ignore non_reactive_update
+  let canvas: HTMLCanvasElement | null = null;
+  let chart: Chart | null = null;
 
-    const minBalance = Math.min(...chartData().map((d) => d.balance));
-    const maxBalance = Math.max(...chartData().map((d) => d.balance));
-    const balanceRange = maxBalance - minBalance || 1;
+  const createChart = () => {
+    if (!canvas || chartData().length === 0) return;
 
-    return chartData().map((point, index) => {
-      const x =
-        (index / (chartData().length - 1)) * (width - (showYAxis ? 40 : 10)) + (showYAxis ? 35 : 5);
-      const y = height - 5 - ((point.balance - minBalance) / balanceRange) * (height - 10);
-      return { x, y, ...point };
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const labels = chartData().map((point) => point.date);
+    const data = chartData().map((point) => point.balance);
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Balance',
+            data,
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: 'rgb(59, 130, 246)',
+            fill: false,
+            tension: 0.1,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Balance (Right)', // this is only for the right y-axis
+            data,
+            borderColor: 'transparent',
+            backgroundColor: 'transparent',
+            borderWidth: 0,
+            pointRadius: 0,
+            fill: false,
+            tension: 0.1,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: false
+          }
+        },
+        scales: {
+          x: {
+            display: showXAxis,
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            display: showYAxis,
+            position: 'left',
+            grid: {
+              display: false
+            }
+          },
+          y1: {
+            display: showYAxis,
+            position: 'right',
+            grid: {
+              display: false
+            }
+          }
+        },
+        elements: {
+          point: {
+            hoverRadius: 4
+          }
+        }
+      }
     });
+  };
+
+  onMount(() => {
+    createChart();
   });
 
-  const pathD = $derived(() => {
-    if (chartPoints().length === 0) return '';
-
-    return chartPoints()
-      .map((point, index) => (index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`))
-      .join(' ');
-  });
-
-  const zeroLineY = $derived(() => {
-    if (chartData().length === 0) return 0;
-
-    const minBalance = Math.min(...chartData().map((d) => d.balance));
-    const maxBalance = Math.max(...chartData().map((d) => d.balance));
-    const balanceRange = maxBalance - minBalance || 1;
-
-    // Calculate y-position for zero balance
-    return height - 5 - ((0 - minBalance) / balanceRange) * (height - 10);
-  });
-
-  const yAxisTicks = $derived(() => {
-    if (!showYAxis || chartData().length === 0) return [];
-
-    const minBalance = Math.min(...chartData().map((d) => d.balance));
-    const maxBalance = Math.max(...chartData().map((d) => d.balance));
-    const balanceRange = maxBalance - minBalance || 1;
-
-    const ticks = [];
-    const numTicks = 5;
-
-    for (let i = 0; i <= numTicks; i++) {
-      const balance = minBalance + (i / numTicks) * balanceRange;
-      const y = height - 5 - ((balance - minBalance) / balanceRange) * (height - 10);
-      ticks.push({ balance, y });
+  onDestroy(() => {
+    if (chart) {
+      chart.destroy();
     }
-
-    return ticks;
   });
 
   export const chartState = () => {
     return {
       chartData: chartData(),
-      chartPoints: chartPoints(),
-      zeroLineY: zeroLineY(),
-      yAxisTicks: yAxisTicks()
+      chart: chart
     };
   };
 </script>
 
 {#if chartData().length > 1}
-  <svg {width} {height}>
-    {#if showYAxis}
-      <!-- Y-axis line -->
-      <line
-        x1="30"
-        y1="5"
-        x2="30"
-        y2={height - 5}
-        stroke="currentColor"
-        stroke-width="1"
-        class="text-gray-400"
-      />
-
-      <!-- Y-axis ticks and labels -->
-      {#each yAxisTicks() as tick (tick.y)}
-        <line
-          x1="30"
-          y1={tick.y}
-          x2="35"
-          y2={tick.y}
-          stroke="currentColor"
-          stroke-width="1"
-          class="text-gray-400"
-        />
-        <text x="25" y={tick.y + 3} text-anchor="end" font-size="10" class="text-gray-500">
-          {tick.balance.toFixed(0)}
-        </text>
-      {/each}
-    {/if}
-
-    <path d={pathD()} stroke="currentColor" stroke-width="2" fill="none" class="text-blue-600" />
-    {#each chartPoints() as point (point.x)}
-      <circle cx={point.x} cy={point.y} r="2" fill="currentColor" class="text-blue-600" />
-    {/each}
-    <line
-      x1={showYAxis ? 35 : 5}
-      x2={width - 5}
-      y1={zeroLineY()}
-      y2={zeroLineY()}
-      stroke="currentColor"
-      stroke-width="1"
-      stroke-dasharray="5,5"
-      class="text-gray-400"
-    />
-  </svg>
+  <div style="width: {width}px; height: {height}px;">
+    <canvas bind:this={canvas} {width} {height}></canvas>
+  </div>
 {:else}
   <div class="text-xs text-gray-400">No data</div>
 {/if}

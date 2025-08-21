@@ -56,6 +56,6 @@ describe('Stats Page', () => {
     expect(chartContainer).toBeTruthy();
 
     // Check that BalanceChart is rendered (it should be a child of the container)
-    expect(container.querySelector('svg')).toBeTruthy();
+    expect(container.querySelector('canvas')).toBeTruthy();
   });
 });
