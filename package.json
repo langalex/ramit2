@@ -14,7 +14,8 @@
     "lint": "prettier --check . && eslint .",
     "test:unit": "vitest",
     "test": "bun run test:unit -- --run && bun run test:e2e",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "icons:setup": "bun run scripts/generate-icons.js"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
@@ -62,5 +63,8 @@
   },
   "trustedDependencies": [
     "@tailwindcss/oxide"
-  ]
+  ],
+  "dependencies": {
+    "sharp": "^0.33.0"
+  }
 }
