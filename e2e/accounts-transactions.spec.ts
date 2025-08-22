@@ -17,14 +17,14 @@ test('account and transactions flow', async ({ page }) => {
   await page.getByRole('link', { name: accountName }).click();
 
   // Add first transaction
-  await page.getByRole('button', { name: '+' }).click();
+  await page.getByLabel('Add transaction').click();
   await page.getByLabel('Description').fill(tx1.description);
   await page.getByLabel('Amount').fill(String(tx1.amount));
   // Date is prefilled; leave as-is
   await page.getByRole('button', { name: 'Save' }).click();
 
   // Add second transaction
-  await page.getByRole('button', { name: '+' }).click();
+  await page.getByLabel('Add transaction').click();
   await page.getByLabel('Description').fill(tx2.description);
   await page.getByLabel('Amount').fill(String(tx2.amount));
   await page.getByRole('button', { name: 'Save' }).click();
