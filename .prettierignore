@@ -7,4 +7,3 @@ bun.lock
 .env
 .env.*
 .DS_Store
-/static/

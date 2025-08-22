@@ -21,7 +21,7 @@
   const chartWidth = $derived(chartContainer?.clientWidth ?? 150);
 
   function filterRecent(balanceHistory: Record<string, number>): Record<string, number> {
-    const since = oneYearAgo();
+    const since = twoYearsAgo();
     return Object.fromEntries(
       Object.entries(balanceHistory).filter(([yearMonth]) => {
         return yearMonth > since;
@@ -29,8 +29,8 @@
     );
   }
 
-  function oneYearAgo(): string {
-    const date = Temporal.Now.plainDateISO().subtract({ years: 1 });
+  function twoYearsAgo(): string {
+    const date = Temporal.Now.plainDateISO().subtract({ months: 24 });
     return date.year + '-' + date.month;
   }
 
@@ -40,13 +40,6 @@
 </script>
 
 <Table.Root>
-  <Table.Header>
-    <Table.Row>
-      <Table.Cell>Account</Table.Cell>
-      <Table.Cell class="text-center">Balance History</Table.Cell>
-      <Table.Cell class="text-right">Balance</Table.Cell>
-    </Table.Row>
-  </Table.Header>
   <Table.Body>
     {#each accounts as account (account.id)}
       <Table.Row>
@@ -59,7 +52,8 @@
           <a href={resolve('/stats') + `?id=${account.id}`}>
             <BalanceChart
               width={chartWidth}
-              height={30}
+              height={60}
+              showYAxis={false}
               balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
             />
           </a>
@@ -73,12 +67,12 @@
   <Table.Footer>
     <Table.Row>
       <Table.Cell colspan={2}>Total</Table.Cell>
-      <Table.Cell class="text-center">{formatAmount(total)}</Table.Cell>
+      <Table.Cell class="text-right">{formatAmount(total)}</Table.Cell>
     </Table.Row>
   </Table.Footer>
 </Table.Root>
 
-<div class="m-auto w-full p-4">
+<div class="m-auto w-full py-4">
   <button
     type="button"
     onclick={() => (showAddAccountDrawer = true)}

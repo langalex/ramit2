@@ -4,7 +4,7 @@ import BalanceChart from './BalanceChart.svelte';
 
 describe('BalanceChart', () => {
   describe('chartState', () => {
-    it('should return empty arrays when no balance history provided', () => {
+    it('should return empty chartData when no balance history provided', () => {
       const { component } = render(BalanceChart, {
         props: {
           balanceHistory: {},
@@ -15,9 +15,7 @@ describe('BalanceChart', () => {
 
       const state = component.chartState();
       expect(state.chartData).toEqual([]);
-      expect(state.chartPoints).toEqual([]);
-      expect(state.zeroLineY).toBe(0);
-      expect(state.yAxisTicks).toEqual([]);
+      expect(state.chart).toBeNull();
     });
 
     it('should calculate chart data correctly for positive balances', () => {
@@ -44,61 +42,6 @@ describe('BalanceChart', () => {
       expect(state.chartData[1].balance).toBe(200);
       expect(state.chartData[2].date).toBe('2024-01-03');
       expect(state.chartData[2].balance).toBe(150);
-
-      expect(state.chartPoints).toHaveLength(3);
-      expect(state.chartPoints[0].x).toBe(5); // First point at left edge
-      expect(state.chartPoints[2].x).toBe(145); // Last point at right edge
-
-      // Zero line should be below the chart area since all balances are positive
-      expect(state.zeroLineY).toBeGreaterThan(25);
-    });
-
-    it('should calculate chart data correctly for negative balances', () => {
-      const balanceHistory = {
-        '2024-01-01': -100,
-        '2024-01-02': -200,
-        '2024-01-03': -150
-      };
-
-      const { component } = render(BalanceChart, {
-        props: {
-          balanceHistory,
-          width: 150,
-          height: 30
-        }
-      });
-
-      const state = component.chartState();
-
-      expect(state.chartData).toHaveLength(3);
-      expect(state.chartPoints).toHaveLength(3);
-
-      // Zero line should be above the chart area since all balances are negative
-      expect(state.zeroLineY).toBeLessThan(5);
-    });
-
-    it('should calculate chart data correctly for mixed positive and negative balances', () => {
-      const balanceHistory = {
-        '2024-01-01': -100,
-        '2024-01-02': 0,
-        '2024-01-03': 100
-      };
-
-      const { component } = render(BalanceChart, {
-        props: {
-          balanceHistory,
-          width: 150,
-          height: 30
-        }
-      });
-
-      const state = component.chartState();
-
-      expect(state.chartData).toHaveLength(3);
-      expect(state.chartPoints).toHaveLength(3);
-
-      // Zero line should be in the middle since we have -100 to +100 range
-      expect(state.zeroLineY).toBe(15);
     });
 
     it('should render no data if only single data point', () => {
@@ -120,18 +63,14 @@ describe('BalanceChart', () => {
     it('should sort dates correctly', () => {
       const balanceHistory = {
         '2024-01-03': 300,
-
         '2024-01-01': 100,
-
         '2024-01-02': 200
       };
 
       const { component } = render(BalanceChart, {
         props: {
           balanceHistory,
-
           width: 150,
-
           height: 30
         }
       });
@@ -139,20 +78,17 @@ describe('BalanceChart', () => {
       const state = component.chartState();
 
       expect(state.chartData[0].date).toBe('2024-01-01');
-
       expect(state.chartData[1].date).toBe('2024-01-02');
-
       expect(state.chartData[2].date).toBe('2024-01-03');
     });
 
-    it('should handle zero balance range correctly', () => {
+    it('should render canvas when multiple data points exist', () => {
       const balanceHistory = {
-        '2024-01-01': 0,
-        '2024-01-02': 0,
-        '2024-01-03': 0
+        '2024-01-01': 100,
+        '2024-01-02': 200
       };
 
-      const { component } = render(BalanceChart, {
+      const { container } = render(BalanceChart, {
         props: {
           balanceHistory,
           width: 150,
@@ -160,83 +96,29 @@ describe('BalanceChart', () => {
         }
       });
 
-      const state = component.chartState();
-
-      expect(state.chartData).toHaveLength(3);
-      expect(state.chartPoints).toHaveLength(3);
-
-      // All points should have the same y value since balance range is 0
-      expect(state.chartPoints[0].y).toBe(state.chartPoints[1].y);
-      expect(state.chartPoints[1].y).toBe(state.chartPoints[2].y);
+      expect(container.querySelector('canvas')).toBeTruthy();
     });
 
-    it('should generate y-axis ticks when showYAxis is true', () => {
-      const balanceHistory = {
-        '2024-01-01': 100,
-        '2024-01-02': 200,
-        '2024-01-03': 150
-      };
-
-      const { component } = render(BalanceChart, {
-        props: {
-          balanceHistory,
-          width: 150,
-          height: 30,
-          showYAxis: true
-        }
-      });
-
-      const state = component.chartState();
-      expect(state.yAxisTicks).toHaveLength(6); // 0 to 5 inclusive
-
-      // Check first and last tick values
-      expect(state.yAxisTicks[0].balance).toBe(100);
-      expect(state.yAxisTicks[5].balance).toBe(200);
-    });
-
-    it('should adjust chart positioning when y-axis is shown', () => {
+    it('should render canvas with correct dimensions', () => {
       const balanceHistory = {
         '2024-01-01': 100,
         '2024-01-02': 200
       };
 
-      const { component } = render(BalanceChart, {
+      const { container } = render(BalanceChart, {
         props: {
           balanceHistory,
-          width: 150,
-          height: 30,
-          showYAxis: true
+          width: 300,
+          height: 60
         }
       });
 
-      const state = component.chartState();
-
-      // Chart points should be positioned to account for y-axis space
-      expect(state.chartPoints[0].x).toBe(35); // First point starts at x=35 instead of x=5
-      expect(state.chartPoints[1].x).toBe(145); // Last point at right edge
-    });
-
-    it('should not generate y-axis ticks when showYAxis is false', () => {
-      const balanceHistory = {
-        '2024-01-01': 100,
-        '2024-01-02': 200
-      };
-
-      const { component } = render(BalanceChart, {
-        props: {
-          balanceHistory,
-          width: 150,
-          height: 30,
-          showYAxis: false
-        }
-      });
-
-      const state = component.chartState();
-      expect(state.yAxisTicks).toEqual([]);
-
-      // Chart points should use original positioning
-      expect(state.chartPoints[0].x).toBe(5);
-      expect(state.chartPoints[1].x).toBe(145);
+      const canvas = container.querySelector('canvas');
+      expect(canvas).toBeTruthy();
+      // Check the container div dimensions instead of canvas dimensions
+      const containerDiv = container.querySelector('div');
+      expect(containerDiv?.style.width).toBe('300px');
+      expect(containerDiv?.style.height).toBe('60px');
     });
   });
 });
