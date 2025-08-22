@@ -58,6 +58,9 @@
               <a href={resolve('/import')}>RemoteStorage Import</a>
             </DropdownMenuItem>
             <DropdownMenuItem>
+              <a href={resolve('/replicate')}>Replicate to CouchDB</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
               <a
                 href="https://github.com/langalex/ramit2"
                 target="_blank"
