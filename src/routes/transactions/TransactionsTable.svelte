@@ -22,7 +22,7 @@
 <Table.Root>
   <Table.Body>
     {#each months as [month, transactions] (month)}
-      <Table.Row class="bg-gray-100">
+      <Table.Row class="border-b border-gray-800 font-bold dark:border-gray-200">
         <Table.Cell colspan={2}>{month}</Table.Cell>
         <Table.Cell class="text-right">
           {formatAmount(transactions.reduce((acc, t) => acc + t.amount, 0))}

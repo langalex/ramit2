@@ -40,13 +40,6 @@
 </script>
 
 <Table.Root>
-  <Table.Header>
-    <Table.Row>
-      <Table.Cell>Account</Table.Cell>
-      <Table.Cell class="text-center">Balance History</Table.Cell>
-      <Table.Cell class="text-right">Balance</Table.Cell>
-    </Table.Row>
-  </Table.Header>
   <Table.Body>
     {#each accounts as account (account.id)}
       <Table.Row>
@@ -73,12 +66,12 @@
   <Table.Footer>
     <Table.Row>
       <Table.Cell colspan={2}>Total</Table.Cell>
-      <Table.Cell class="text-center">{formatAmount(total)}</Table.Cell>
+      <Table.Cell class="text-right">{formatAmount(total)}</Table.Cell>
     </Table.Row>
   </Table.Footer>
 </Table.Root>
 
-<div class="m-auto w-full p-4">
+<div class="m-auto w-full py-4">
   <button
     type="button"
     onclick={() => (showAddAccountDrawer = true)}

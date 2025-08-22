@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import AddTransactionDrawer from './AddTransactionDrawer.svelte';
   import TransactionsTable from './TransactionsTable.svelte';
+  import PlusIcon from '@lucide/svelte/icons/plus';
 
   const { data } = $props();
   const account = data.account;
@@ -14,12 +15,14 @@
   });
 </script>
 
-<div class="flex p-1">
+<div class="flex items-center p-1">
   <div class="text-xl">{account.name}</div>
   <button
-    class="ml-auto bg-violet-500 px-2 text-white"
-    onclick={() => (showAddTransactionDrawer = true)}>+</button
+    class="ml-auto rounded-md bg-violet-500 p-2 text-white hover:bg-violet-600"
+    onclick={() => (showAddTransactionDrawer = true)}
   >
+    <PlusIcon class="h-4 w-4" />
+  </button>
 </div>
 
 <TransactionsTable {transactions} />

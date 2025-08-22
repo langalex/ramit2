@@ -6,6 +6,9 @@ Ramit is a personal accounting app inspried by the book 'I will teach you to be 
 
 It is based on the idea that for each area of spending you preload an account with money and only spend as much of it as you have in that account.
 
-## App Icons
+- Icons: https://lucide.dev/
+- UI components: https://www.shadcn-svelte.com/
+
+## Favicons
 
 Run `bun run icons:setup` to generate favicons and iOS/Android icons based on `static/icon.svg`.
