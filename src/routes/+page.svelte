@@ -21,7 +21,7 @@
   const chartWidth = $derived(chartContainer?.clientWidth ?? 150);
 
   function filterRecent(balanceHistory: Record<string, number>): Record<string, number> {
-    const since = oneYearAgo();
+    const since = twoYearsAgo();
     return Object.fromEntries(
       Object.entries(balanceHistory).filter(([yearMonth]) => {
         return yearMonth > since;
@@ -29,8 +29,8 @@
     );
   }
 
-  function oneYearAgo(): string {
-    const date = Temporal.Now.plainDateISO().subtract({ years: 1 });
+  function twoYearsAgo(): string {
+    const date = Temporal.Now.plainDateISO().subtract({ months: 24 });
     return date.year + '-' + date.month;
   }
 
@@ -52,7 +52,8 @@
           <a href={resolve('/stats') + `?id=${account.id}`}>
             <BalanceChart
               width={chartWidth}
-              height={30}
+              height={60}
+              showYAxis={false}
               balanceHistory={filterRecent(balanceHistoriesByAccount[account.id] ?? {})}
             />
           </a>

@@ -67,7 +67,7 @@
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             borderWidth: 2,
-            pointRadius: 2,
+            pointRadius: 0,
             pointBackgroundColor: 'rgb(59, 130, 246)',
             pointBorderColor: 'rgb(59, 130, 246)',
             fill: false,
