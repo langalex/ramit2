@@ -12,4 +12,4 @@ alwaysApply: true
 
 - run unit tests with `bun vitest run <file>`
 - when generating new code, always add unit tests
-- when creating a \*.svelte.test.ts file, remove the leading `+` from the filename
+- this is critical: when creating a test file, remove the leading `+` from the filename

@@ -62,6 +62,20 @@ describe('account model', () => {
       expect(accounts).toHaveLength(1);
       expect(accounts[0].name).toBe('Account 1');
     });
+
+    it('should remove accounts from the list when they are deleted', async () => {
+      const account = await accountModel.create('Account to Delete');
+      const [accounts, cancel] = await accountModel.all();
+
+      await waitFor(() => accounts.length === 1);
+      expect(accounts[0].id).toBe(account.id);
+
+      await accountModel.remove(account.id);
+      await waitFor(() => accounts.length === 0);
+      cancel();
+
+      expect(accounts).toHaveLength(0);
+    });
   });
 
   describe('find', () => {

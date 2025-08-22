@@ -1,12 +1,15 @@
 <script lang="ts">
   import * as Table from '$lib/components/ui/table/index.js';
   import { buttonVariants } from '$lib/components/ui/button/index.js';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
   import { onDestroy } from 'svelte';
   import BalanceChart from '$lib/components/BalanceChart.svelte';
 
   import { resolve } from '$app/paths';
   import AddAccountDrawer from './AddAccountDrawer.svelte';
   import { formatAmount } from '$lib/utils/format';
+  import { remove as removeAccount } from '$lib/models/account.svelte';
+  import { EllipsisVertical } from '@lucide/svelte';
 
   const { data } = $props();
   const { balancesByAccount, balanceHistoriesByAccount, cancel } = data;
@@ -32,6 +35,16 @@
   function twoYearsAgo(): string {
     const date = Temporal.Now.plainDateISO().subtract({ months: 24 });
     return date.year + '-' + date.month;
+  }
+
+  async function handleRemoveAccount(accountId: string, accountName: string) {
+    if (confirm(`Are you sure you want to remove the account "${accountName}"?`)) {
+      try {
+        await removeAccount(accountId);
+      } catch (error) {
+        console.error('Failed to remove account:', error);
+      }
+    }
   }
 
   onDestroy(() => {
@@ -61,12 +74,31 @@
         <Table.Cell class="text-right"
           >{formatAmount(balancesByAccount[account.id] ?? 0)}</Table.Cell
         >
+        <Table.Cell class="w-12">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger
+              class="rounded p-1 transition-colors hover:bg-gray-100"
+              aria-label={`Actions for ${account.name}`}
+            >
+              <EllipsisVertical class="h-4 w-4" />
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item
+                aria-label={`Remove account ${account.name}`}
+                onclick={() => handleRemoveAccount(account.id, account.name)}
+                class="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                Remove Account
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </Table.Cell>
       </Table.Row>
     {/each}
   </Table.Body>
   <Table.Footer>
     <Table.Row>
-      <Table.Cell colspan={2}>Total</Table.Cell>
+      <Table.Cell colspan={3}>Total</Table.Cell>
       <Table.Cell class="text-right">{formatAmount(total)}</Table.Cell>
     </Table.Row>
   </Table.Footer>

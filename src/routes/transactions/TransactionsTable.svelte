@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
+  import { EllipsisVertical } from '@lucide/svelte';
   import { Button } from '$lib/components/ui/button/index.js';
   import * as Table from '$lib/components/ui/table/index.js';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -38,7 +38,7 @@
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
                 <Button variant="ghost" size="icon">
-                  <EllipsisIcon />
+                  <EllipsisVertical class="h-4 w-4" />
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>

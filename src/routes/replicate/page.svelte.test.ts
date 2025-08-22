@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import Page from './+page.svelte';
+import { render } from 'vitest-browser-svelte';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
+
 // Mock pouchdb-browser to avoid real network calls and provide minimal API used by the app
 vi.mock('pouchdb-browser', () => {
   class FakePouchDB {
@@ -25,10 +29,6 @@ vi.mock('pouchdb-browser', () => {
   }
   return { default: FakePouchDB };
 });
-
-import Page from './+page.svelte';
-import { render } from 'vitest-browser-svelte';
-import { screen, fireEvent, waitFor } from '@testing-library/dom';
 
 describe('Replicate Page', () => {
   beforeEach(async () => {
