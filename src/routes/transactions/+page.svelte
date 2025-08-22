@@ -18,6 +18,7 @@
 <div class="flex items-center p-1">
   <div class="text-xl">{account.name}</div>
   <button
+    aria-label="Add transaction"
     class="ml-auto rounded-md bg-violet-500 p-2 text-white hover:bg-violet-600"
     onclick={() => (showAddTransactionDrawer = true)}
   >
