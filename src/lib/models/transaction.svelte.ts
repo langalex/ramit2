@@ -160,15 +160,22 @@ export const balancesForAccounts = async (
     live: true,
     include_docs: true
   });
+
   changes.on('change', (change) => {
     if (!change.doc) return;
 
     if (change.deleted) {
-      // we don't know which account the transaction was for, so we need to update all balances
-      accountIds.forEach((accountId) => {
-        balancesByAccountId[accountId] = 0;
-      });
-      updateBalances(balancesByAccountId);
+      if (Object.keys(balancesByAccountId).includes(change.id)) {
+        // account deleted
+        delete balancesByAccountId[change.id];
+      } else {
+        // transaction deleted
+        // we don't know which account the transaction was for, so we need to update all balances
+        accountIds.forEach((accountId) => {
+          balancesByAccountId[accountId] = 0;
+        });
+        updateBalances(balancesByAccountId);
+      }
     } else {
       const doc = change.doc;
       if (doc.type !== 'Transaction' || !accountIds.includes(doc.accountId)) {
@@ -179,7 +186,12 @@ export const balancesForAccounts = async (
   });
 
   await updateBalances(balancesByAccountId);
-  return [balancesByAccountId, () => changes.cancel()];
+
+  const cancelChanges = () => {
+    changes.cancel();
+  };
+
+  return [balancesByAccountId, cancelChanges];
 };
 
 const updateBalances = async (balancesByAccountId: Record<string, number>): Promise<void> => {

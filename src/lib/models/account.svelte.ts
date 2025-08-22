@@ -1,4 +1,5 @@
 import db from '../db';
+import * as transactionModel from './transaction.svelte';
 const accountDb = db<AccountDoc>();
 
 export type Account = {
@@ -54,12 +55,21 @@ export const all = async (): Promise<[Account[], () => void]> => {
     include_docs: true
   });
   changes.on('change', (change) => {
-    const doc = change.doc;
-    if (doc && doc.type === 'Account') {
-      allAccounts.push({
-        id: doc._id,
-        name: doc.name
-      });
+    if (change.deleted) {
+      // Handle account deletion
+      const index = allAccounts.findIndex((account) => account.id === change.id);
+      if (index !== -1) {
+        allAccounts.splice(index, 1);
+      }
+    } else {
+      // Handle account addition/update
+      const doc = change.doc;
+      if (doc && doc.type === 'Account') {
+        allAccounts.push({
+          id: doc._id,
+          name: doc.name
+        });
+      }
     }
   });
 
@@ -76,4 +86,19 @@ export const find = async (id: string): Promise<Account | undefined> => {
   } catch {
     return undefined;
   }
+};
+
+export const remove = async (id: string): Promise<void> => {
+  // First, get all transactions for this account and delete them
+  const [transactions, cancel] = await transactionModel.forAccount(id);
+
+  for (const transaction of transactions) {
+    await transactionModel.remove(transaction.id);
+  }
+
+  cancel();
+
+  // Then delete the account
+  const doc = await accountDb.get(id);
+  await accountDb.remove(doc);
 };

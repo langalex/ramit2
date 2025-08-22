@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as transactionModel from './transaction.svelte';
+import * as accountModel from './account.svelte';
 import db from '../db';
 import { waitFor } from '$lib/test-helpers/wait-for';
 
@@ -216,6 +217,44 @@ describe('transaction model', () => {
 
       await transactionModel.remove(transaction2.id);
       await waitFor(() => balances['a1'] === 0);
+      expect(balances['a1']).toBe(0);
+
+      cancel();
+    });
+
+    it('should remove balance when account is deleted', async () => {
+      // Create an account and add some transactions
+      await accountModel.create('Test Account', 'a1');
+      await transactionModel.create('Income', 1000, '2024-01-01', 'a1');
+      await transactionModel.create('Expense', -300, '2024-01-02', 'a1');
+
+      const [balances, cancel] = await transactionModel.balancesForAccounts(['a1']);
+
+      // Wait for initial balance to be calculated
+      await waitFor(() => balances['a1'] === 700);
+      expect(balances['a1']).toBe(700);
+
+      // Remove the account
+      await accountModel.remove('a1');
+
+      // Wait for balance to be removed
+      await waitFor(() => !balances['a1']);
+      expect(balances['a1']).toBeUndefined();
+
+      cancel();
+    });
+
+    it('should add balance when new account is created', async () => {
+      const [balances, cancel] = await transactionModel.balancesForAccounts(['a1']);
+
+      // Initially no balance for a1
+      expect(balances['a1']).toBe(0);
+
+      // Create the account
+      await accountModel.create('New Account', 'a1');
+
+      // Wait for balance to be added
+      await waitFor(() => 'a1' in balances);
       expect(balances['a1']).toBe(0);
 
       cancel();
