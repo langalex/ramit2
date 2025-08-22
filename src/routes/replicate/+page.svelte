@@ -25,6 +25,7 @@
   let status = $state<string | null>(null);
   let isSyncing = $state(false);
   let cancelSync: null | (() => void) = null;
+  let continuous = $state(false);
 
   function saveConfig(cfg: SavedConfig) {
     localStorage.setItem('replicate-config', JSON.stringify(cfg));
@@ -39,7 +40,7 @@
     saveConfig({ url, username });
 
     const remote = new PouchDB(url, { auth: { username, password } });
-    const sync = localDb.sync(remote, { live: true, retry: true });
+    const sync = localDb.sync(remote, continuous ? { live: true, retry: true } : undefined);
     isSyncing = true;
     status = 'Sync started';
 
@@ -92,11 +93,12 @@
           id="url"
           name="url"
           type="url"
-          placeholder="https://my.server.com:5984/ramit2"
+          placeholder="https://my.server.com:5984/ramit"
           bind:value={url}
           class="w-full rounded border px-2 py-1"
           required
         />
+        <p class="text-sm text-gray-500">Make sure CORS is enabled on the remote CouchDB server.</p>
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -124,6 +126,17 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <input
+          id="continuous"
+          name="continuous"
+          type="checkbox"
+          bind:checked={continuous}
+          class="rounded border px-2 py-1"
+        />
+        <label class="text-sm" for="continuous">Continuous replication</label>
+      </div>
+
+      <div class="flex items-center gap-2">
         <button
           type="submit"
           class="rounded bg-violet-500 px-3 py-1 text-white disabled:opacity-50"
@@ -136,13 +149,12 @@
             >Cancel</button
           >
         {/if}
-        {#if status}
-          <div class="ml-auto text-sm opacity-80">{status}</div>
-        {/if}
       </div>
     </form>
   </Card.Content>
   <Card.Footer>
-    <p>Enter your remote CouchDB database URL.</p>
+    {#if status}
+      <div>{status}</div>
+    {/if}
   </Card.Footer>
 </Card.Root>
