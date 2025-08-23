@@ -350,3 +350,74 @@ export async function find(id: string): Promise<Transaction | undefined> {
     return undefined;
   }
 }
+
+export type MonthlyIncomeExpenses = {
+  month: string; // YYYY-MM format
+  income: number;
+  expenses: number;
+};
+
+export const monthlyIncomeExpenses = async (
+  accountId: string
+): Promise<MonthlyIncomeExpenses[]> => {
+  const designDoc = {
+    _id: '_design/monthlyIncomeExpenses',
+    views: {
+      byAccountIdYearMonth: {
+        map: `function (doc) {
+          if (doc.type === 'Transaction') {
+            const yearMonth = doc.date.substring(0, 7);
+            const amount = doc.amount;
+            if (amount > 0) {
+              emit([doc.accountId, yearMonth, 'income'], amount);
+            } else {
+              emit([doc.accountId, yearMonth, 'expenses'], Math.abs(amount));
+            }
+          }
+        }`,
+        reduce: '_sum'
+      }
+    }
+  };
+
+  // Check if design doc exists and create if it doesn't
+  if (!(await find('_design/monthlyIncomeExpenses'))) {
+    await genericDb.put(designDoc);
+  }
+
+  const result = await transactionDb.query('monthlyIncomeExpenses/byAccountIdYearMonth', {
+    startkey: [accountId],
+    endkey: [accountId, {}, {}],
+    reduce: true,
+    group: true,
+    group_level: 3
+  });
+
+  return Object.entries(
+    result.rows.reduce(
+      (monthlyData, row) => {
+        const [, month, type] = row.key;
+        const amount = row.value || 0;
+
+        if (!monthlyData[month]) {
+          monthlyData[month] = { income: 0, expenses: 0 };
+        }
+
+        if (type === 'income') {
+          monthlyData[month].income += amount;
+        } else if (type === 'expenses') {
+          monthlyData[month].expenses += amount;
+        }
+
+        return monthlyData;
+      },
+      {} as Record<string, { income: number; expenses: number }>
+    )
+  )
+    .map(([month, data]) => ({
+      month,
+      income: data.income,
+      expenses: data.expenses
+    }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+};

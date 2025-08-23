@@ -351,4 +351,82 @@ describe('transaction model', () => {
       });
     });
   });
+
+  describe('monthlyIncomeExpenses', () => {
+    const testAccountId = 'test-account-123';
+
+    it('should return empty array for account with no transactions', async () => {
+      const result = await transactionModel.monthlyIncomeExpenses(testAccountId);
+      expect(result).toEqual([]);
+    });
+
+    it('should calculate monthly income and expenses correctly', async () => {
+      // Create test transactions
+      await transactionModel.create('Salary', 5000, '2024-01-15', testAccountId);
+      await transactionModel.create('Rent', -1500, '2024-01-01', testAccountId);
+      await transactionModel.create('Freelance', 2000, '2024-01-20', testAccountId);
+      await transactionModel.create('Groceries', -300, '2024-01-10', testAccountId);
+
+      await transactionModel.create('Salary', 5000, '2024-02-15', testAccountId);
+      await transactionModel.create('Rent', -1500, '2024-02-01', testAccountId);
+      await transactionModel.create('Bonus', 1000, '2024-02-28', testAccountId);
+
+      const result = await transactionModel.monthlyIncomeExpenses(testAccountId);
+
+      expect(result).toHaveLength(2);
+
+      const january = result.find((r) => r.month === '2024-01');
+      expect(january).toEqual({
+        month: '2024-01',
+        income: 7000, // 5000 + 2000
+        expenses: 1800 // 1500 + 300
+      });
+
+      const february = result.find((r) => r.month === '2024-02');
+      expect(february).toEqual({
+        month: '2024-02',
+        income: 6000, // 5000 + 1000
+        expenses: 1500 // 1500
+      });
+    });
+
+    it('should handle only income transactions', async () => {
+      await transactionModel.create('Salary', 5000, '2024-01-15', testAccountId);
+
+      const result = await transactionModel.monthlyIncomeExpenses(testAccountId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        month: '2024-01',
+        income: 5000,
+        expenses: 0
+      });
+    });
+
+    it('should handle only expense transactions', async () => {
+      await transactionModel.create('Rent', -1500, '2024-01-01', testAccountId);
+
+      const result = await transactionModel.monthlyIncomeExpenses(testAccountId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        month: '2024-01',
+        income: 0,
+        expenses: 1500
+      });
+    });
+
+    it('should sort months chronologically', async () => {
+      await transactionModel.create('Salary', 1000, '2024-03-15', testAccountId);
+      await transactionModel.create('Salary', 1000, '2024-01-15', testAccountId);
+      await transactionModel.create('Salary', 1000, '2024-02-15', testAccountId);
+
+      const result = await transactionModel.monthlyIncomeExpenses(testAccountId);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].month).toBe('2024-01');
+      expect(result[1].month).toBe('2024-02');
+      expect(result[2].month).toBe('2024-03');
+    });
+  });
 });
