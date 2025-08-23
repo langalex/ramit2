@@ -127,7 +127,7 @@ describe('Import Page Logic', () => {
         id: 'test-transaction-id',
         account_id: 'test-account-id',
         description: 'Test Transaction',
-        amount: 1500, // $15.00 in cents
+        amount: 15,
         date: 1704067200000 // January 1, 2024
       };
 

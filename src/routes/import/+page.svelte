@@ -154,7 +154,7 @@
     } else {
       const transaction = await createTransaction(
         transactionData.description,
-        transactionData.amount / 100, // Ramit stores cents
+        transactionData.amount,
         offsetToDateString(transactionData.date),
         transactionData.account_id,
         transactionData.id
