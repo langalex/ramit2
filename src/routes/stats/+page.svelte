@@ -13,13 +13,14 @@
   const chartWidth = $derived(Object.keys(balanceHistory).length * 10);
   let balanceChartScrollArea: HTMLDivElement | null = $state(null);
   let incomeExpensesChartScrollArea: HTMLDivElement | null = $state(null);
+  let scrollLeft = $state(0);
 
   $effect(() => {
     if (balanceChartScrollArea) {
-      balanceChartScrollArea.scrollLeft = chartWidth;
+      balanceChartScrollArea.scrollLeft = scrollLeft;
     }
     if (incomeExpensesChartScrollArea) {
-      incomeExpensesChartScrollArea.scrollLeft = chartWidth;
+      incomeExpensesChartScrollArea.scrollLeft = scrollLeft;
     }
   });
 
@@ -35,7 +36,11 @@
   <Card.Content class="space-y-6">
     <div>
       <h3 class="mb-4 text-lg font-semibold">Balance History</h3>
-      <div bind:this={balanceChartScrollArea} class="overflow-x-scroll">
+      <div
+        bind:this={balanceChartScrollArea}
+        onscroll={(e: Event) => (scrollLeft = (e.target as HTMLDivElement).scrollLeft)}
+        class="overflow-x-scroll"
+      >
         <div bind:this={chartContainer}>
           <BalanceChart
             width={chartWidth}
@@ -50,7 +55,11 @@
 
     <div>
       <h3 class="mb-4 text-lg font-semibold">Monthly Income & Expenses</h3>
-      <div bind:this={incomeExpensesChartScrollArea} class="overflow-x-scroll">
+      <div
+        bind:this={incomeExpensesChartScrollArea}
+        onscroll={(e: Event) => (scrollLeft = (e.target as HTMLDivElement).scrollLeft)}
+        class="overflow-x-scroll"
+      >
         <IncomeExpensesChart data={monthlyData} width={chartWidth} height={350} />
       </div>
     </div>
