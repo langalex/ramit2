@@ -1,5 +1,5 @@
 import { find } from '$lib/models/account.svelte';
-import { balanceHistoriesForAccounts } from '$lib/models/transaction.svelte';
+import { balanceHistoriesForAccounts, monthlyIncomeExpenses } from '$lib/models/transaction.svelte';
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ url }) => {
@@ -12,10 +12,12 @@ export const load = async ({ url }) => {
     redirect(302, '/');
   }
   const [balanceHistoriesByAccount, cancel] = await balanceHistoriesForAccounts([account.id]);
+  const monthlyData = await monthlyIncomeExpenses(account.id);
 
   return {
     account,
     cancel,
-    balanceHistory: balanceHistoriesByAccount[account.id]
+    balanceHistory: balanceHistoriesByAccount[account.id],
+    monthlyData
   };
 };
