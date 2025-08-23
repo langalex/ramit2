@@ -9,7 +9,6 @@
   const balanceHistory = data.balanceHistory;
   const monthlyData = data.monthlyData;
   const cancel = data.cancel;
-  let chartContainer = $state<HTMLDivElement | null>(null);
   const chartWidth = $derived(Object.keys(balanceHistory).length * 10);
   let balanceChartScrollArea: HTMLDivElement | null = $state(null);
   let incomeExpensesChartScrollArea: HTMLDivElement | null = $state(null);
@@ -41,15 +40,13 @@
         onscroll={(e: Event) => (scrollLeft = (e.target as HTMLDivElement).scrollLeft)}
         class="overflow-x-scroll"
       >
-        <div bind:this={chartContainer}>
-          <BalanceChart
-            width={chartWidth}
-            height={350}
-            showYAxis={true}
-            showXAxis={true}
-            {balanceHistory}
-          />
-        </div>
+        <BalanceChart
+          width={chartWidth}
+          height={350}
+          showYAxis={true}
+          showXAxis={true}
+          {balanceHistory}
+        />
       </div>
     </div>
 
