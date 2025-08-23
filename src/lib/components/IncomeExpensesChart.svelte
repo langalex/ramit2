@@ -44,7 +44,8 @@
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'rgb(59, 130, 246)',
             borderWidth: 1,
-            stack: 'stack1'
+            stack: 'stack1',
+            yAxisID: 'y'
           },
           {
             label: 'Expenses',
@@ -52,7 +53,26 @@
             backgroundColor: 'rgba(239, 68, 68, 0.8)',
             borderColor: 'rgb(239, 68, 68)',
             borderWidth: 1,
-            stack: 'stack1'
+            stack: 'stack1',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Income (Right)', // this is only for the right y-axis
+            data: incomeData,
+            borderColor: 'transparent',
+            backgroundColor: 'transparent',
+            borderWidth: 0,
+            stack: 'stack1',
+            yAxisID: 'y1'
+          },
+          {
+            label: 'Expenses (Right)', // this is only for the right y-axis
+            data: expensesData,
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            borderWidth: 0,
+            stack: 'stack1',
+            yAxisID: 'y1'
           }
         ]
       },
@@ -80,18 +100,21 @@
         },
         scales: {
           x: {
-            display: true,
-            title: {
-              display: true,
-              text: 'Month'
-            }
+            display: true
           },
           y: {
             display: true,
-            title: {
-              display: true,
-              text: 'Amount'
-            },
+            position: 'left',
+            beginAtZero: false,
+            ticks: {
+              callback: function (value) {
+                return Math.abs(Number(value)).toFixed(0);
+              }
+            }
+          },
+          y1: {
+            display: true,
+            position: 'right',
             beginAtZero: false,
             ticks: {
               callback: function (value) {
