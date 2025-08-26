@@ -48,7 +48,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "remotestorage-widget": "^1.7.0",
     "remotestoragejs": "^2.0.0-beta.8",
-    "sharp": "^0.33.0",
+    "sharp": "^0.34.3",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwind-merge": "^3.3.1",
