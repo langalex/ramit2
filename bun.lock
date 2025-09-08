@@ -32,7 +32,7 @@
         "prettier": "^3.4.2",
         "prettier-plugin-svelte": "^3.3.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
-        "remotestorage-widget": "^1.7.0",
+        "remotestorage-widget": "^1.8.0",
         "remotestoragejs": "^2.0.0-beta.8",
         "sharp": "^0.34.3",
         "svelte": "^5.0.0",
@@ -717,7 +717,7 @@
 
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
-    "remotestorage-widget": ["remotestorage-widget@1.7.0", "", {}, "sha512-cH6Uz1g90tFQgXPVRb0KmKH4PwoitNcXQf0CcqGID+0pJfKfw7m8nVsxD7e+IPOGr+qGnX1NhCr5oXPLLqFCOA=="],
+    "remotestorage-widget": ["remotestorage-widget@1.8.0", "", {}, "sha512-l8AE2npC2nNkC8bAU6WhWO5Wl4exaXbE2yR82s5Oiqg6h0KN2mYwvLLTQGkp6mSmZTA86e7XaOcNp4lXS8CsBA=="],
 
     "remotestoragejs": ["remotestoragejs@2.0.0-beta.8", "", { "dependencies": { "@types/node": "20.14.0", "@types/tv4": "^1.2.29", "esm": "^3.2.25", "tv4": "^1.3.0", "webfinger.js": "^2.7.1", "xhr2": "^0.2.1" }, "optionalDependencies": { "fsevents": "^2.3.2" } }, "sha512-rtyHTG2VbtiKTRmbwjponRf5VTPJMcHv/ijNid1zX48C0Z0F8ZCBBfkKD2QCxTQyQvCupkWNy3wuIu4HE+AEng=="],
 
