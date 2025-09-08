@@ -57,7 +57,7 @@
     "temporal-polyfill": "^0.3.0",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5.0.0",
-    "typescript-eslint": "^8.41.0",
+    "typescript-eslint": "^8.42.0",
     "vaul-svelte": "^1.0.0-next.7",
     "vite": "^7.0.4",
     "vitest": "^3.2.3",
